@@ -13,7 +13,7 @@ function addScript(attrs) {
   console.log('addScriot', attrs)
   let script = document.createElement('script')
   Object.entries(attrs).map(([key, value]) => script.setAttribute(key, value))
-  document.body.appendChild(script)
+  document.head.appendChild(script)
   }
 
 function docReady(fn) {
