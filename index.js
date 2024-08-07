@@ -215,6 +215,77 @@ function makeEl(parsed) {
 addLink({rel: 'stylesheet', type: 'text/css', href: 'https://cdn.jsdelivr.net/npm/juncture-digital/css/index.css'})
 addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', type: 'module'})
 
+function deleteAllComments(rootEl) {
+  var iterator = document.createNodeIterator(rootEl, NodeFilter.SHOW_COMMENT, () => { return NodeFilter.FILTER_ACCEPT}, false);
+  var curNode
+  while (curNode = iterator.nextNode()) { curNode.remove() }
+}
+
+function restructure(rootEl) {
+  let styleSheet = rootEl.querySelector('style')
+  deleteAllComments(rootEl)
+
+  let restructured = document.createElement('main')
+  if (styleSheet) restructured.appendChild(styleSheet.cloneNode(true))
+  
+  restructured.className = 'page-content markdown-body'
+  restructured.setAttribute('aria-label', 'Content')
+  restructured.setAttribute('data-theme', 'light')
+  let currentSection = restructured;
+  let sectionParam
+  Array.from(rootEl?.children || []).forEach(el => {
+    if (el.tagName[0] === 'H' && isNumeric(el.tagName.slice(1))) {
+      let heading = el
+      let sectionLevel = parseInt(heading.tagName.slice(1))
+      if (currentSection) {
+        (Array.from(currentSection.children))
+          .filter(child => !/^H\d/.test(child.tagName))
+          .filter(child => !/PARAM/.test(child.tagName))
+          .filter(child => !/STYLE/.test(child.tagName))
+          .filter(child => !/^VE--/.test(child.tagName))
+          .forEach((child, idx) => { 
+            let segId = `${currentSection.getAttribute('data-id') || 0}.${idx+1}`
+            child.setAttribute('data-id', segId)
+            child.id = segId
+            child.classList.add('segment')
+          })
+      }
+
+      currentSection = document.createElement('section')
+      currentSection.classList.add(`section${sectionLevel}`)
+      Array.from(heading.classList).forEach(c => currentSection.classList.add(c))
+      heading.className = ''
+      if (heading.id) {
+        currentSection.id = heading.id
+        heading.removeAttribute('id')
+      }
+
+      currentSection.innerHTML += heading.outerHTML
+
+      let headings = []
+      for (let lvl = 1; lvl < sectionLevel; lvl++) {
+        headings = [...headings, ...Array.from(restructured.querySelectorAll(`H${lvl}`)).filter(h => h.parentElement.tagName === 'SECTION')]
+      }
+
+      let parent = (sectionLevel === 1 || headings.length === 0) 
+        ? restructured 
+        : headings.pop()?.parentElement
+      parent?.appendChild(currentSection)
+      currentSection.setAttribute('data-id', computeDataId(currentSection))
+
+    } else  {
+      let segId = `${currentSection.getAttribute('data-id') || 0}.${currentSection.children.length}`
+      el.setAttribute('data-id', segId)
+      el.id = segId
+      el.classList.add('segment')
+      if (el !== sectionParam) {
+        currentSection.innerHTML += el.outerHTML
+      }
+    }
+  })
+  return restructured
+}
+
 docReady(function() {  
   let orig = document.querySelector('article')
   let header
@@ -274,7 +345,8 @@ docReady(function() {
   
   let article = document.createElement('article')
   if (header) article.appendChild(header)
-  article.appendChild(main)
+  // article.appendChild(main)
+  article.appendChild(restructure(main))
   if (footer) article.appendChild(footer)
 
   console.log(article)
