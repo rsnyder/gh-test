@@ -207,7 +207,7 @@ docReady(function() {
   let orig = document.querySelector('article')
   
   let article = new DOMParser().parseFromString(window.config.content, 'text/html').querySelector('body')
-  article.querySelectorAll('p')
+  Array.from(article.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
     .forEach(p => {
       let codeEl = document.createElement('code')
