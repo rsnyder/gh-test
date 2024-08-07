@@ -345,7 +345,8 @@ docReady(function() {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag === 've-header') {
       header = makeEl(parsed)
-      codeEl.parentElement.removeChild(codeEl)
+      // codeEl.parentElement.removeChild(codeEl)
+      console.log(codeEl.parentElement.parentElement)
     } else if (parsed.tag === 've-footer') {
       footer = makeEl(parsed)
       codeEl.parentElement.removeChild(codeEl)
@@ -356,8 +357,8 @@ docReady(function() {
   
   let article = document.createElement('article')
   if (header) article.appendChild(header)
-  article.appendChild(main)
-  // article.appendChild(restructure(main))
+  // article.appendChild(main)
+  article.appendChild(restructure(main))
   if (footer) article.appendChild(footer)
 
   console.log(article)
