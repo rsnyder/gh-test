@@ -221,6 +221,8 @@ function deleteAllComments(rootEl) {
   while (curNode = iterator.nextNode()) { curNode.remove() }
 }
 
+function isNumeric(arg) { return !isNaN(arg) }
+
 function restructure(rootEl) {
   let styleSheet = rootEl.querySelector('style')
   deleteAllComments(rootEl)
