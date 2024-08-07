@@ -22,7 +22,6 @@ function docReady(fn) {
 }
 
 const classes = new Set('left right full sticky'.split(' '))
-console.log(classes)
 const components = {
   juncture3: {
     've-animated-image': {
