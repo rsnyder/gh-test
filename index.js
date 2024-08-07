@@ -186,7 +186,7 @@ function parseCodeEl(codeEl, codeLang) {
 }
 
 function makeEl(parsed) {
-  console.log(parsed)
+  // console.log(parsed)
   let el = document.createElement(parsed.tag)
   if (parsed.id) el.id = parsed.id
   if (parsed.class) parsed.class.split(' ').forEach(c => el.classList.add(c))
@@ -220,6 +220,13 @@ docReady(function() {
       p.textContent = ''
       p.appendChild(codeEl)
     })
+  Array.from(article.querySelectorAll('param'))
+  .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length === 0)
+  .forEach(param => {
+    console.log(param)
+    Array.from(param.attributes).forEach(attr => console.log(attr.name, attr.value))
+    param.tagName = 've-image'
+  })
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag) {
