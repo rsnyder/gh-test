@@ -7,4 +7,5 @@ document.head.appendChild(stylesheet)
 
 let script = document.createElement('script')
 script.src = 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js'
+script.type = 'module'
 document.head.appendChild(script)
