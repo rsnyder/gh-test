@@ -134,8 +134,9 @@ function parseHeadline(s, codeLang) {
       if (!parsed.entities) parsed.entities = []
       parsed.entities.push(token)
     }
-    else if (tokenIdx === 0 && !parsed.tag && tagMap[token]) {
-      parsed.tag = token.indexOf('ve-') === 0 ? token : `ve-${token}`
+    else if (tokenIdx === 0 && !parsed.tag && tagMap[token.replace(/^\./,'')]) {
+      let tag = token.replace(/^\./,'')
+      parsed.tag = tag.indexOf('ve-') === 0 ? tag : `ve-${tag}`
       parsed.lang = codeLang || components.juncture3[parsed.tag] ? 'juncture3' : 'juncture2'
     } else if (token === 'script' || token === 'link') parsed.tag = token
     else {
@@ -193,16 +194,6 @@ function makeEl(parsed) {
   if (parsed.entities) el.setAttribute('entities', parsed.entities.join(' '))
   if (parsed.kwargs) for (const [k,v] of Object.entries(parsed.kwargs)) el.setAttribute(k, v === true ? '' : v)
   if (parsed.booleans) parsed.booleans.forEach(b => el.setAttribute(b, '') )
-  if (parsed.args) {
-    let ul = document.createElement('ul')
-    el.appendChild(ul)
-    for (const arg of parsed.args) {
-      let argEl = new DOMParser().parseFromString(marked.parse(arg.replace(/^\s*-\s*/, '')), 'text/html').body.firstChild
-      let li = document.createElement('li')
-      li.innerHTML = argEl.innerHTML.indexOf('wc:') === 0 ? argEl.innerHTML.replace(/<em>([^<]+)<\/em>/g, '_$1_') : argEl.innerHTML
-      ul.appendChild(li)
-    }
-  }
   if (parsed.raw) el.textContent = parsed.raw
   return el
 }
@@ -216,10 +207,24 @@ docReady(function() {
   let orig = document.querySelector('article')
   
   let article = new DOMParser().parseFromString(window.config.content, 'text/html').querySelector('body')
+  article.querySelectorAll('p')
+    .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
+    .forEach(p => {
+      let codeEl = document.createElement('code')
+      codeEl.setAttribute('class', 'language-juncture2')
+      let replacementText = p.innerHTML.trim().slice(1)
+        .replace(/\n\s*-\s+/g, '\n')
+        .replace(/<a href="/g, '')
+        .replace(/">[^<]*<\/a>/g, '')
+      codeEl.textContent = replacementText
+      p.textContent = ''
+      p.appendChild(codeEl)
+    })
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag) codeEl.replaceWith(makeEl(parsed))
   })
+  
   console.log(article)
   
   orig.replaceWith(article)
