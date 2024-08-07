@@ -221,14 +221,11 @@ docReady(function() {
       p.appendChild(codeEl)
     })
   Array.from(article.querySelectorAll('param'))
-  .filter(param => {
-    console.log(param)
-    return Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length
-  })
+  .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length)
   .forEach(param => {
     console.log(param)
     Array.from(param.attributes).forEach(attr => console.log(attr.name, attr.value))
-    param.tagName = 've-image'
+    param.tagName = 'VE-IMAGE'
   })
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
