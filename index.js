@@ -9,3 +9,7 @@ let script = document.createElement('script')
 script.src = 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js'
 script.type = 'module'
 document.head.appendChild(script)
+
+console.log(window.config.content)
+let el = new DOMParser().parseFromString(window.config.content, 'text/html').querySelector('body')
+console.log(el)

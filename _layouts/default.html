@@ -1,7 +1,4 @@
 <!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script>
-    window.config = {site:{{site|jsonify}}, page:{{page|jsonify}}}
-</script>
-<script src="{{ site.baseurl }}/index.js"></script>
-<main>{{ content }}</main>
+<script>window.config={site:{{site|jsonify}},page:{{page|jsonify}},content:{{content|jsonify}}}</script>
+<script src="{{site.baseurl}}/index.js"></script>
