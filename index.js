@@ -142,7 +142,8 @@ function parseHeadline(s, codeLang) {
       if (parsed.tag === 'script' && !parsed.src) parsed.src = token
       else if (parsed.tag === 'link' && !parsed.href) parsed.href= token
       else {
-        if (components[codeLang]?.[parsed.tag] && components[codeLang]?.[parsed.tag].booleans.has(token)) {
+        let tagObj = tagMap[parsed.tag]
+        if (tagObj?.booleans.has(token)) {
           if (!parsed.booleans) parsed.booleans = []
           parsed.booleans.push(token)
         } else {
@@ -154,14 +155,13 @@ function parseHeadline(s, codeLang) {
     tokenIdx++
   }
 
-  if (parsed.tag && components[codeLang]?.[parsed.tag]?.raw) {
-    // ??
-  } else if (parsed.tag && components[codeLang]?.[parsed.tag]?.positional && parsed.args) {
-    if (!parsed.kwargs) parsed.kwargs = {}
+  if (parsed.tag && parsed.args) {
+    let tagObj = tagMap[parsed.tag]
     parsed.args.forEach((value, idx) => {
-      let key = components[codeLang][parsed.tag].positional[idx]
-      console.log(idx, key, value)
+      if (idx >= tagObj.positional.length) return
+      let key = tagObj[idx]
       value = value[0] === '"' && value[value.length-1] === '"' ? value.slice(1, -1) : value
+      console.log(idx, key, value)
       if (!parsed.kwargs) parsed.kwargs = {}
       if (parsed.kwargs[key]) parsed.kwargs[key] += ` ${value}`
       else parsed.kwargs[key] = value    
