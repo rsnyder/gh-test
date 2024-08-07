@@ -190,7 +190,6 @@ function parseCodeEl(codeEl, codeLang) {
 }
 
 function makeEl(parsed) {
-  console.log(parsed)
   let el = document.createElement(parsed.tag)
   if (parsed.id) el.id = parsed.id
   if (parsed.class) parsed.class.split(' ').forEach(c => el.classList.add(c))
@@ -306,6 +305,12 @@ docReady(function() {
   main.classList.add('markdown-body')
   main.setAttribute('aria-label', 'Content')
   main.innerHTML = window.config.content
+
+  // remove view as buttons
+  Array.from(main.querySelectorAll('a > img'))
+  .filter(img => img.src.indexOf('ve-button.png') > -1 || img.src.indexOf('wb.svg') > -1)
+  .forEach(viewAsButton => viewAsButton?.parentElement?.parentElement?.remove())
+
   Array.from(main.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
     .forEach(p => {
@@ -360,7 +365,7 @@ docReady(function() {
   article.appendChild(restructure(main))
   if (footer) article.appendChild(footer)
 
-  console.log(article)
+  // console.log(article)
   
   orig.replaceWith(article)
 })
