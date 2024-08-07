@@ -18,6 +18,7 @@ function docReady(fn) {
 }
 
 const classes = new Set(''.split('left right full sticky'.split(' ')))
+console.log(classes)
 const components = {
   juncture3: {
     've-animated-image': {
@@ -100,6 +101,7 @@ function parseHeadline(s, codeLang) {
   let tokenIdx = 0
   while (tokenIdx < tokens.length) {
     let token = tokens[tokenIdx].replace(/<em>/g, '_').replace(/<\/em>/g, '_')
+    console.log(token, classes.has(token))
     if (token.indexOf('=') > 0 && /^[\w-:]+=/.test(token)) {
       let idx = token.indexOf('=')
       let key = token.slice(0, idx)
@@ -199,6 +201,8 @@ addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', typ
 docReady(function() {  
   let orig = document.querySelector('article')
   let article = document.createElement('article')
+  article.classList.add('page-content')
+  article.setAttribute('aria-label', 'Content')
   article.innerHTML = window.config.content
   Array.from(article.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
@@ -221,7 +225,7 @@ docReady(function() {
       let tagObj = tagMap[tag]
       let parsed = { tag }
       Array.from(param.attributes).forEach(attr => {
-        if (attr,name !== tag) {
+        if (attr.name !== tag) {
           if (tagObj.booleans.has(attr.name)) {
             if (!parsed.booleans) parsed.booleans = []
             parsed.booleans.push(attr.name)
