@@ -1,3 +1,9 @@
+```
+header "Juncture Examples" subtitle="The Amalfi Coast" background=wc:AmalfiCoast11.jpg .sticky
+[Juncture home](https://v3.juncture-digital.org)
+[Examples](/)
+```
+
 # gh-test
 
 `image wc:Sunflower_sky_backdrop.jpg class=right`

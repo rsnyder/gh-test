@@ -199,7 +199,6 @@ addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', typ
 
 docReady(function() {  
   let orig = document.querySelector('article')
-  let article = document.createElement('article')
   let header
   let footer
   let main = document.createElement('main')
@@ -207,7 +206,7 @@ docReady(function() {
   main.classList.add('markdown-body')
   main.setAttribute('aria-label', 'Content')
   main.innerHTML = window.config.content
-  Array.from(article.querySelectorAll('p'))
+  Array.from(main.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
     .forEach(p => {
       let codeEl = document.createElement('code')
@@ -244,13 +243,22 @@ docReady(function() {
   })
   main.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
-    if (parsed.tag) codeEl.replaceWith(makeEl(parsed))
+    if (parsed.tag === 've-header') {
+      header = makeEl(parsed)
+      codeEl.parentElement.removeChild(codeEl)
+    } else if (parsed.tag === 've-footer') {
+      footer = makeEl(parsed)
+      codeEl.parentElement.removeChild(codeEl)
+    } else if (parsed.tag) {
+      codeEl.replaceWith(makeEl(parsed))
+    }
   })
   
+  let article = document.createElement('article')
   if (header) article.appendChild(header)
   article.appendChild(main)
   if (footer) article.appendChild(footer)
-    
+
   console.log(article)
   
   orig.replaceWith(article)
