@@ -10,15 +10,15 @@ script.src = 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js'
 script.type = 'module'
 document.head.appendChild(script)
 
-console.log(document.body.main)
+let orig = document.querySelector('article')
 
-let main = new DOMParser().parseFromString(window.config.content, 'text/html').querySelector('body')
-main.querySelectorAll('code').forEach(codeEl => {
+let article = new DOMParser().parseFromString(window.config.content, 'text/html').querySelector('body')
+article.querySelectorAll('code').forEach(codeEl => {
     let junctureEl = document.createElement('ve-image')
     junctureEl.setAttribute('src', 'wc:Sunflower_sky_backdrop.jpg')
     junctureEl.classList.add('right')
     codeEl.replaceWith(junctureEl)
 })
-console.log(main)
+console.log(article)
 
-document.body.main.replaceWith(main)
+orig.replaceWith(article)
