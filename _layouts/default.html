@@ -7,7 +7,8 @@
 <script type="module">
     import 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js'
     import { mount } from 'https://cdn.jsdelivr.net/npm/juncture-digital/js/ghp.js'
-    window.test = {{ site | jsonify }}
+    window.site = {{ site | jsonify }}
+    window.page = {{ page | jsonify }}
     window.jekyll = {
         baseurl: '{{ site.baseurl }}',
         source: {
@@ -17,8 +18,10 @@
           path: `{{ page.path }}`
         }
       }
+    console.log(window.site, window.page)
+
+    window.test = { site: {{ site | jsonify }}, page: {{ page | jsonify }} }
     console.log(window.test)
-    console.log(JSON.parse(window.test))
     mount()
     console.log(window.config)
 </script>
