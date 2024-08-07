@@ -223,9 +223,11 @@ docReady(function() {
   Array.from(article.querySelectorAll('param'))
   .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length)
   .forEach(param => {
-    console.log(param)
+    let tag = Array.from(param.attributes).find(attr => attr.name.indexOf('ve-') === 0).name
+    param.attributes.removeNamedItem(tag)
     Array.from(param.attributes).forEach(attr => console.log(attr.name, attr.value))
-    param.tagName = 'VE-IMAGE'
+    param.tagName = tag.toUpperCase()
+    console.log(param)
   })
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
