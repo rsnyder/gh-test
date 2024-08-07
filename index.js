@@ -154,15 +154,20 @@ function parseHeadline(s, codeLang) {
 
   if (parsed.tag && parsed.args) {
     let tagObj = tagMap[parsed.tag]
+    let listArgs = []
     parsed.args.forEach((value, idx) => {
-      if (idx >= tagObj.positional?.length) return
-      let key = tagObj.positional[idx]
-      value = value[0] === '"' && value[value.length-1] === '"' ? value.slice(1, -1) : value
-      if (!parsed.kwargs) parsed.kwargs = {}
-      if (parsed.kwargs[key]) parsed.kwargs[key] += ` ${value}`
-      else parsed.kwargs[key] = value    
+      if (idx >= tagObj.positional?.length) {
+        listArgs.push(value)
+      } else {
+        let key = tagObj.positional[idx]
+        value = value[0] === '"' && value[value.length-1] === '"' ? value.slice(1, -1) : value
+        if (!parsed.kwargs) parsed.kwargs = {}
+        if (parsed.kwargs[key]) parsed.kwargs[key] += ` ${value}`
+        else parsed.kwargs[key] = value  
+      }
     })
-    delete parsed.args
+    if (listArgs.length) parsed.args = listArgs
+    else delete parsed.args
   }
   return parsed
 }
