@@ -1,27 +1,7 @@
 <!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://cdn.jsdelivr.net/npm/juncture-digital/css/index.css" rel="stylesheet">
-<main class="page-content" aria-label="Content" style="display:none;">
-  {{ content }}
-</main>
-<script type="module">
-    import 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js'
-    import { mount } from 'https://cdn.jsdelivr.net/npm/juncture-digital/js/ghp.js'
-    window.site = {{ site | jsonify }}
-    window.page = {{ page | jsonify }}
-    window.jekyll = {
-        baseurl: '{{ site.baseurl }}',
-        source: {
-          owner: `{{ site.github.owner_name }}`,
-          repository: `{{ site.github.repository_name }}`,
-          branch: `{{ site.github.source.branch }}`,
-          path: `{{ page.path }}`
-        }
-      }
-    console.log(window.site, window.page)
-
-    window.test = { site: {{ site | jsonify }}, page: {{ page | jsonify }}, layout: {{ layout | jsonify }}, theme: {{ theme | jsonify }}, content: {{ content | jsonify }}, paginator: {{ paginator | jsonify }} }
-    console.log(window.test)
-    mount()
-    console.log(window.config)
+<main>{{ content }}</main>
+<script>
+    window.config = {site:{{site|jsonify}}, page:{{page|jsonify}}}
 </script>
+<script src="{{ site.baseurl }}/index.js"></script>
