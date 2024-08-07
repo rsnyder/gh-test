@@ -85,14 +85,12 @@ Object.values(components).forEach(langComponents => {
   Object.entries(langComponents).forEach(([tag, attrs]) => {
     let tagObj = { 
       booleans : new Set((attrs.booleans || '').split(' ').filter(s => s)),
-      positional: (attrs.positional || '').split(' ').filter(s => s),
-      classes: new Set((attrs.classes || '').split(' ').filter(s => s))
+      positional: (attrs.positional || '').split(' ').filter(s => s)
     }
     tagMap[tag] = tagObj
     tagMap[tag.slice(3)] = tagObj
   })
 })
-console.log(tagMap)
 
 function parseHeadline(s, codeLang) {
   codeLang = codeLang || 'juncture3'
@@ -137,7 +135,7 @@ function parseHeadline(s, codeLang) {
       parsed.entities.push(token)
     }
     else if (tokenIdx === 0 && !parsed.tag && tagMap[token]) {
-      parsed.tag = tagMap[token]
+      parsed.tag = token.indexOf('ve-') === 0 ? token : `ve-${token}`
       parsed.lang = codeLang || components.juncture3[parsed.tag] ? 'juncture3' : 'juncture2'
     } else if (token === 'script' || token === 'link') parsed.tag = token
     else {
@@ -155,11 +153,14 @@ function parseHeadline(s, codeLang) {
     }
     tokenIdx++
   }
+
   if (parsed.tag && components[codeLang]?.[parsed.tag]?.raw) {
+    // ??
   } else if (parsed.tag && components[codeLang]?.[parsed.tag]?.positional && parsed.args) {
     if (!parsed.kwargs) parsed.kwargs = {}
     parsed.args.forEach((value, idx) => {
       let key = components[codeLang][parsed.tag].positional[idx]
+      console.log(idx, key, value)
       value = value[0] === '"' && value[value.length-1] === '"' ? value.slice(1, -1) : value
       if (!parsed.kwargs) parsed.kwargs = {}
       if (parsed.kwargs[key]) parsed.kwargs[key] += ` ${value}`
@@ -196,6 +197,9 @@ docReady(function() {
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
     console.log(parsed)
+    if (parsed.tag) {
+
+    }
   })
   console.log(article)
   
