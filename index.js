@@ -198,8 +198,8 @@ addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', typ
 
 docReady(function() {  
   let orig = document.querySelector('article')
-  
-  let article = new DOMParser().parseFromString(window.config.content, 'text/html').querySelector('body')
+  let article = document.createElement('article')
+  article.innerHTML = window.config.content
   Array.from(article.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
     .forEach(p => {
