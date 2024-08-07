@@ -1,16 +1,12 @@
 console.log(window.config)
 
-console.log('add stylesheet')
-
 function addLink(attrs) {
-  console.log('addLink', attrs)
   let stylesheet = document.createElement('link')
   Object.entries(attrs).map(([key, value]) => stylesheet.setAttribute(key, value))
   document.head.appendChild(stylesheet)
 }
 
 function addScript(attrs) {
-  console.log('addScriot', attrs)
   let script = document.createElement('script')
   Object.entries(attrs).map(([key, value]) => script.setAttribute(key, value))
   document.head.appendChild(script)
@@ -100,7 +96,6 @@ function parseHeadline(s, codeLang) {
     if (tokens.length > 0 && tokens[tokens.length-1].indexOf('=') === tokens[tokens.length-1].length-1) tokens[tokens.length-1] = `${tokens[tokens.length-1]}${token}`
     else tokens.push(token)
   })
-  // console.log(tokens)
   let parsed = {}
   let tokenIdx = 0
   while (tokenIdx < tokens.length) {
@@ -186,7 +181,7 @@ function parseCodeEl(codeEl, codeLang) {
 }
 
 function makeEl(parsed) {
-  // console.log(parsed)
+  console.log(parsed)
   let el = document.createElement(parsed.tag)
   if (parsed.id) el.id = parsed.id
   if (parsed.class) parsed.class.split(' ').forEach(c => el.classList.add(c))
@@ -201,9 +196,7 @@ function makeEl(parsed) {
 addLink({rel: 'stylesheet', type: 'text/css', href: 'https://cdn.jsdelivr.net/npm/juncture-digital/css/index.css'})
 addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', type: 'module'})
 
-docReady(function() {
-  console.log('init')
-  
+docReady(function() {  
   let orig = document.querySelector('article')
   
   let article = new DOMParser().parseFromString(window.config.content, 'text/html').querySelector('body')
@@ -224,22 +217,30 @@ docReady(function() {
   .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length)
   .forEach(param => {
     let tag = Array.from(param.attributes).find(attr => attr.name.indexOf('ve-') === 0).name
-    param.attributes.removeNamedItem(tag)
-    let el = document.createElement(tag)
-    Array.from(param.attributes).forEach(attr => el.setAttribute(attr.name, attr.value))
-    param.replaceWith(el)
+    if (tag) {
+      let tagObj = tagMap[tag]
+      let parsed = { tag }
+      Array.from(param.attributes).forEach(attr => {
+        if (attr,name !== tag) {
+          if (tagObj.booleans.has(attr.name)) {
+            if (!parsed.booleans) parsed.booleans = []
+            parsed.booleans.push(attr.name)
+          } else {
+            if (!parsed.kwargs) parsed.kwargs = {}
+            if (parsed.kwargs[attr.name]) parsed.kwargs[attr.name] += ` ${attr.value}`
+            else parsed.kwargs[attr.name] = attr.value
+          }
+        }
+      })
+      param.replaceWith(makeEl(parsed))
+    }
   })
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
-    if (parsed.tag) {
-      console.log(codeEl.parentElement)
-      codeEl.replaceWith(makeEl(parsed))
-    }
+    if (parsed.tag) codeEl.replaceWith(makeEl(parsed))
   })
   
   console.log(article)
   
   orig.replaceWith(article)
 })
-
- console.log('js loaded')
