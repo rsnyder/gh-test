@@ -345,11 +345,10 @@ docReady(function() {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag === 've-header') {
       header = makeEl(parsed)
-      // codeEl.parentElement.removeChild(codeEl)
-      console.log(codeEl.parentElement.parentElement)
+      codeEl.parentElement.parentElement.parentElement.remove()
     } else if (parsed.tag === 've-footer') {
       footer = makeEl(parsed)
-      codeEl.parentElement.removeChild(codeEl)
+      codeEl.parentElement.parentElement.parentElement.remove()
     } else if (parsed.tag) {
       codeEl.replaceWith(makeEl(parsed))
     }
