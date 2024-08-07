@@ -200,10 +200,13 @@ addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', typ
 docReady(function() {  
   let orig = document.querySelector('article')
   let article = document.createElement('article')
-  article.classList.add('page-content')
-  article.classList.add('markdown-body')
-  article.setAttribute('aria-label', 'Content')
-  article.innerHTML = window.config.content
+  let header
+  let footer
+  let main = document.createElement('main')
+  main.classList.add('page-content')
+  main.classList.add('markdown-body')
+  main.setAttribute('aria-label', 'Content')
+  main.innerHTML = window.config.content
   Array.from(article.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
     .forEach(p => {
@@ -217,7 +220,7 @@ docReady(function() {
       p.textContent = ''
       p.appendChild(codeEl)
     })
-  Array.from(article.querySelectorAll('param'))
+  Array.from(main.querySelectorAll('param'))
   .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length)
   .forEach(param => {
     let tag = Array.from(param.attributes).find(attr => attr.name.indexOf('ve-') === 0).name
@@ -239,11 +242,15 @@ docReady(function() {
       param.replaceWith(makeEl(parsed))
     }
   })
-  article.querySelectorAll('code').forEach(codeEl => {
+  main.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag) codeEl.replaceWith(makeEl(parsed))
   })
   
+  if (header) article.appendChild(header)
+  article.appendChild(main)
+  if (footer) article.appendChild(footer)
+    
   console.log(article)
   
   orig.replaceWith(article)
