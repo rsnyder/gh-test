@@ -356,8 +356,8 @@ docReady(function() {
   
   let article = document.createElement('article')
   if (header) article.appendChild(header)
-  // article.appendChild(main)
-  article.appendChild(restructure(main))
+  article.appendChild(main)
+  // article.appendChild(restructure(main))
   if (footer) article.appendChild(footer)
 
   console.log(article)
