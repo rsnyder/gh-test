@@ -222,6 +222,15 @@ function deleteAllComments(rootEl) {
 }
 
 function isNumeric(arg) { return !isNaN(arg) }
+function computeDataId(el) {
+  let dataId = []
+  while (el.parentElement) {
+    let siblings = Array.from(el.parentElement.children).filter(c => c.tagName === el.tagName)
+    dataId.push(siblings.indexOf(el) + 1)
+    el = el.parentElement
+  }
+  return dataId.reverse().join('.')
+}
 
 function restructure(rootEl) {
   let styleSheet = rootEl.querySelector('style')
