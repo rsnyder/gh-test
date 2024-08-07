@@ -17,7 +17,7 @@ function docReady(fn) {
   else document.addEventListener('DOMContentLoaded', fn)
 }
 
-const classes = new Set(''.split('left right full sticky'.split(' ')))
+const classes = new Set('left right full sticky'.split(' '))
 console.log(classes)
 const components = {
   juncture3: {
@@ -101,7 +101,6 @@ function parseHeadline(s, codeLang) {
   let tokenIdx = 0
   while (tokenIdx < tokens.length) {
     let token = tokens[tokenIdx].replace(/<em>/g, '_').replace(/<\/em>/g, '_')
-    console.log(token, classes.has(token))
     if (token.indexOf('=') > 0 && /^[\w-:]+=/.test(token)) {
       let idx = token.indexOf('=')
       let key = token.slice(0, idx)
@@ -202,6 +201,7 @@ docReady(function() {
   let orig = document.querySelector('article')
   let article = document.createElement('article')
   article.classList.add('page-content')
+  article.classList.add('markdown-body')
   article.setAttribute('aria-label', 'Content')
   article.innerHTML = window.config.content
   Array.from(article.querySelectorAll('p'))
