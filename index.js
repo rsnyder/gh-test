@@ -225,9 +225,9 @@ docReady(function() {
   .forEach(param => {
     let tag = Array.from(param.attributes).find(attr => attr.name.indexOf('ve-') === 0).name
     param.attributes.removeNamedItem(tag)
-    Array.from(param.attributes).forEach(attr => console.log(attr.name, attr.value))
-    param.tagName = tag.toUpperCase()
-    console.log(param)
+    let el = document.createElement(tag)
+    Array.from(param.attributes).forEach(attr => el.setAttribute(attr.name, attr.value))
+    param.replaceWith(el)
   })
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
