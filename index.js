@@ -21,6 +21,7 @@ function docReady(fn) {
   else document.addEventListener('DOMContentLoaded', fn)
 }
 
+const classes = new Set(''.split('left right full sticky'.split(' ')))
 const components = {
   juncture3: {
     've-animated-image': {
@@ -81,7 +82,6 @@ const components = {
 }
 let tagMap = {}
 Object.values(components).forEach(langComponents => {
-  Object.entries(attrs).map(([key, value]) => stylesheet.setAttribute(key, value))
   Object.entries(langComponents).forEach(([tag, attrs]) => {
     console.log(tag, attrs)
     let tagObj = { 
@@ -123,12 +123,9 @@ function parseHeadline(s, codeLang) {
         else parsed.kwargs[key] = value
       }
     }
-    else if (token[0] === '.') {
-      let key = 'class'
-      let value = token.slice(1)
-      value = value[0] === '"' && value[value.length-1] === '"' ? value.slice(1, -1) : value
-      if (parsed[key]) parsed[key] += ` ${value}`
-      else parsed[key] = value
+    else if (token[0] === '.' || classes.has(token)) { 
+      if (!parsed.class) parsed.class = []
+      parsed.class.push(token.replace(/^\./,''))
     }
     else if (token[0] === '"') {
       if (!parsed.args) parsed.args = []
