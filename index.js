@@ -84,7 +84,8 @@ Object.values(components).forEach(langComponents => {
   Object.keys(langComponents).forEach(tag => {
     let tagObj = { 
       booleans : new Set(langComponents[(tag.booleans || '').split(' ').filter(s => s)]),
-      positional: langComponents[(tag.positional || '').split(' ').filter(s => s)]
+      positional: langComponents[(tag.positional || '').split(' ').filter(s => s)],
+      classes: new Set((tag.classes || '').split(' ').filter(s => s))
     }
     tagMap[tag] = tagObj
     tagMap[tag.slice(3)] = tagObj
