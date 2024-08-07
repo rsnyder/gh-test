@@ -20,7 +20,7 @@
       }
     console.log(window.site, window.page)
 
-    window.test = { site: {{ site | jsonify }}, page: {{ page | jsonify }} }
+    window.test = { site: {{ site | jsonify }}, page: {{ page | jsonify }}, layout: {{ layout | jsonify }}, theme: {{ theme | jsonify }}, content: {{ content | jsonify }}, paginator: {{ paginator | jsonify }} }
     console.log(window.test)
     mount()
     console.log(window.config)
