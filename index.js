@@ -2,20 +2,18 @@ console.log(window.config)
 
 console.log('add stylesheet')
 
-function addStylesheet() {
-  console.log('add stylesheet')
+function addLink(attrs) {
+  console.log('addLink', attrs)
   let stylesheet = document.createElement('link')
-  stylesheet.rel = 'stylesheet'
-  stylesheet.href = 'https://cdn.jsdelivr.net/npm/juncture-digital/css/index.css'
+  Object.entries(attrs).map(([key, value]) => stylesheet.setAttribute(key, value))
   document.head.appendChild(stylesheet)
 }
 
-function addWc() {
-  console.log('add web component script')
+function addScriot(attrs) {
+  console.log('addScriot', attrs)
   let script = document.createElement('script')
-  script.src = 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js'
-  script.type = 'module'
-  document.head.appendChild(script)
+  Object.entries(attrs).map(([key, value]) => script.setAttribute(key, value))
+  document.body.appendChild(script)
   }
 
 function docReady(fn) {
@@ -23,8 +21,8 @@ function docReady(fn) {
   else document.addEventListener('DOMContentLoaded', fn)
 }
 
-addStylesheet()
-addWc()
+addLink({rel: 'stylesheet', type: 'text/css', href: 'https://cdn.jsdelivr.net/npm/juncture-digital/css/index.css'})
+addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', type: 'module'})
 
 docReady(function() {
   console.log('init')
