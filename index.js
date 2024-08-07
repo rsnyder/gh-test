@@ -59,7 +59,7 @@ const components = {
     },
     've-map': {
       booleans: 'cards full left marker prefer-geojson popup-on-hover zoom-on-scroll zoom-on-click',
-      positional: ['center', 'caption']
+      positional: 'center caption'
     },
     've-menu': {
       booleans: 'pdf-download-enabled'
@@ -83,7 +83,6 @@ const components = {
 let tagMap = {}
 Object.values(components).forEach(langComponents => {
   Object.entries(langComponents).forEach(([tag, attrs]) => {
-    console.log(tag, attrs)
     let tagObj = { 
       booleans : new Set((attrs.booleans || '').split(' ').filter(s => s)),
       positional: (attrs.positional || '').split(' ').filter(s => s),
@@ -123,9 +122,10 @@ function parseHeadline(s, codeLang) {
         else parsed.kwargs[key] = value
       }
     }
-    else if (token[0] === '.' || classes.has(token)) { 
-      if (!parsed.class) parsed.class = []
-      parsed.class.push(token.replace(/^\./,''))
+    else if (token[0] === '.' || classes.has(token)) {
+      let className = token.replace(/^\./,'')
+      if (parsed.class) parsed.class += ` ${className}`
+      else parsed.class = className
     }
     else if (token[0] === '"') {
       if (!parsed.args) parsed.args = []
