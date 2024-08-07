@@ -222,7 +222,10 @@ docReady(function() {
     })
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
-    if (parsed.tag) codeEl.replaceWith(makeEl(parsed))
+    if (parsed.tag) {
+      console.log(codeEl.parentElement)
+      codeEl.replaceWith(makeEl(parsed))
+    }
   })
   
   console.log(article)
