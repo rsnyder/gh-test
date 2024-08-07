@@ -195,6 +195,16 @@ function makeEl(parsed) {
   if (parsed.entities) el.setAttribute('entities', parsed.entities.join(' '))
   if (parsed.kwargs) for (const [k,v] of Object.entries(parsed.kwargs)) el.setAttribute(k, v === true ? '' : v)
   if (parsed.booleans) parsed.booleans.forEach(b => el.setAttribute(b, '') )
+  if (parsed.args) {
+    let ul = document.createElement('ul')
+    el.appendChild(ul)
+    for (const arg of parsed.args) {
+      let argEl = new DOMParser().parseFromString(marked.parse(arg.replace(/^\s*-\s*/, '')), 'text/html').body.firstChild
+      let li = document.createElement('li')
+      li.innerHTML = argEl.innerHTML.indexOf('wc:') === 0 ? argEl.innerHTML.replace(/<em>([^<]+)<\/em>/g, '_$1_') : argEl.innerHTML
+      ul.appendChild(li)
+    }
+  }
   if (parsed.raw) el.textContent = parsed.raw
   return el
 }
