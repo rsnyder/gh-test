@@ -158,10 +158,9 @@ function parseHeadline(s, codeLang) {
   if (parsed.tag && parsed.args) {
     let tagObj = tagMap[parsed.tag]
     parsed.args.forEach((value, idx) => {
-      if (idx >= tagObj.positional.length) return
-      let key = tagObj[idx]
+      if (idx >= tagObj.positional?.length) return
+      let key = tagObj.positional[idx]
       value = value[0] === '"' && value[value.length-1] === '"' ? value.slice(1, -1) : value
-      console.log(idx, key, value)
       if (!parsed.kwargs) parsed.kwargs = {}
       if (parsed.kwargs[key]) parsed.kwargs[key] += ` ${value}`
       else parsed.kwargs[key] = value    
@@ -185,6 +184,29 @@ function parseCodeEl(codeEl, codeLang) {
   return parsed
 }
 
+function makeEl(parsed) {
+  console.log(parsed)
+  let el = document.createElement(parsed.tag)
+  if (parsed.id) el.id = parsed.id
+  if (parsed.class) parsed.class.split(' ').forEach(c => el.classList.add(c))
+  if (parsed.style) el.setAttribute('style', Object.entries(parsed.style).map(([k,v]) => `${k}:${v}`).join(';'))
+  if (parsed.entities) el.setAttribute('entities', parsed.entities.join(' '))
+  if (parsed.kwargs) for (const [k,v] of Object.entries(parsed.kwargs)) el.setAttribute(k, v === true ? '' : v)
+  if (parsed.booleans) parsed.booleans.forEach(b => el.setAttribute(b, '') )
+  if (parsed.args) {
+    let ul = document.createElement('ul')
+    el.appendChild(ul)
+    for (const arg of parsed.args) {
+      let argEl = new DOMParser().parseFromString(marked.parse(arg.replace(/^\s*-\s*/, '')), 'text/html').body.firstChild
+      let li = document.createElement('li')
+      li.innerHTML = argEl.innerHTML.indexOf('wc:') === 0 ? argEl.innerHTML.replace(/<em>([^<]+)<\/em>/g, '_$1_') : argEl.innerHTML
+      ul.appendChild(li)
+    }
+  }
+  if (parsed.raw) el.textContent = parsed.raw
+  return el
+}
+    
 addLink({rel: 'stylesheet', type: 'text/css', href: 'https://cdn.jsdelivr.net/npm/juncture-digital/css/index.css'})
 addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', type: 'module'})
 
@@ -196,10 +218,7 @@ docReady(function() {
   let article = new DOMParser().parseFromString(window.config.content, 'text/html').querySelector('body')
   article.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
-    console.log(parsed)
-    if (parsed.tag) {
-
-    }
+    if (parsed.tag) codeEl.replaceWith(makeEl(parsed))
   })
   console.log(article)
   
