@@ -81,12 +81,13 @@ const components = {
 }
 let tagMap = {}
 Object.values(components).forEach(langComponents => {
-  Object.keys(langComponents).forEach(tag => {
-    console.log(tag)
+  Object.entries(attrs).map(([key, value]) => stylesheet.setAttribute(key, value))
+  Object.entries(langComponents).forEach(([tag, attrs]) => {
+    console.log(tag, attrs)
     let tagObj = { 
-      booleans : new Set((tag.booleans || '').split(' ').filter(s => s)),
-      positional: (tag.positional || '').split(' ').filter(s => s),
-      classes: new Set((tag.classes || '').split(' ').filter(s => s))
+      booleans : new Set((attrs.booleans || '').split(' ').filter(s => s)),
+      positional: (attrs.positional || '').split(' ').filter(s => s),
+      classes: new Set((attrs.classes || '').split(' ').filter(s => s))
     }
     tagMap[tag] = tagObj
     tagMap[tag.slice(3)] = tagObj
