@@ -273,7 +273,7 @@ function convertTags(rootEl) {
           }
         }
       })
-      // if (!window.config.isJunctureV1) param.replaceWith(makeEl(parsed))
+      if (!window.config.isJunctureV1) param.replaceWith(makeEl(parsed))
     }
   })
   rootEl.querySelectorAll('code').forEach(codeEl => {
