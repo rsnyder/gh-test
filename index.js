@@ -600,6 +600,18 @@ function restructureForJ1(article) {
     }
   })
 
+  let main = article.querySelector('main')
+  let mainWrapper = document.createElement('main')
+  mainWrapper.className = 'page-content markdown-body'
+  let content = document.createElement('div')
+  content.className = 'content'
+  content.innerHTML = main.innerHTML
+  let viewers = document.createElement('div')
+  viewers.className = 'viewers'
+  mainWrapper.appendChild(content)
+  mainWrapper.appendChild(viewers)
+  main.replaceWith(mainWrapper)
+
   return article
 }
 
