@@ -77,15 +77,13 @@ const components = {
   }
 }
 let tagMap = {}
-Object.values(components).forEach(langComponents => {
-  Object.entries(langComponents).forEach(([tag, attrs]) => {
-    let tagObj = { 
-      booleans : new Set((attrs.booleans || '').split(' ').filter(s => s)),
-      positional: (attrs.positional || '').split(' ').filter(s => s)
-    }
-    tagMap[tag] = tagObj
-    tagMap[tag.slice(3)] = tagObj
-  })
+Object.entries(components).forEach(([tag, attrs]) => {
+  let tagObj = { 
+    booleans : new Set((attrs.booleans || '').split(' ').filter(s => s)),
+    positional: (attrs.positional || '').split(' ').filter(s => s)
+  }
+  tagMap[tag] = tagObj
+  tagMap[tag.slice(3)] = tagObj
 })
 console.log(tagMap)
 
@@ -228,11 +226,11 @@ function computeDataId(el) {
 // convert juncture tags to web component elements
 function convertTags(rootEl) {
   // remove "view as" buttons
-  Array.from(main.querySelectorAll('a > img'))
+  Array.from(rootEl.querySelectorAll('a > img'))
   .filter(img => img.src.indexOf('ve-button.png') > -1 || img.src.indexOf('wb.svg') > -1)
   .forEach(viewAsButton => viewAsButton?.parentElement?.parentElement?.remove())
 
-  Array.from(main.querySelectorAll('p'))
+  Array.from(rootEl.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
     .forEach(p => {
       let codeEl = document.createElement('code')
@@ -245,7 +243,7 @@ function convertTags(rootEl) {
       p.textContent = ''
       p.appendChild(codeEl)
     })
-  Array.from(main.querySelectorAll('param'))
+  Array.from(rootEl.querySelectorAll('param'))
   .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length)
   .forEach(param => {
     let tag = Array.from(param.attributes).find(attr => attr.name.indexOf('ve-') === 0).name
@@ -267,7 +265,7 @@ function convertTags(rootEl) {
       param.replaceWith(makeEl(parsed))
     }
   })
-  main.querySelectorAll('code').forEach(codeEl => {
+  rootEl.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag === 've-header') {
       header = makeEl(parsed)
@@ -376,7 +374,10 @@ function setMeta() {
 
   let firstHeading = document.querySelector('h1, h2, h3')?.innerText.trim()
   let firstParagraph = document.querySelector('p')?.innerText.trim()
-  
+
+  console.log('firstHeading', firstHeading)
+  console.log('firstParagraph', firstParagraph)
+
   let jldEl = document.querySelector('script[type="application/ld+json"]')
   let seo = jldEl ? JSON.parse(jldEl.innerText) : {'@context':'https://schema.org', '@type':'WebSite', description:'', headline:'', name:'', url:''}
   seo.url = location.href
