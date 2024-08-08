@@ -341,9 +341,10 @@ function restructure(rootEl) {
   if (header) {
     article.appendChild(header)
     let headerParent = header.parentElement
-    while (headerParent.parentElement.tagName !== 'BODY') {
-      console.log('headerParent', headerParent)
+    console.log('headerParent', headerParent)
+    while (headerParent.parentElement) {
       headerParent = headerParent.parentElement 
+      console.log('headerParent', headerParent)
     }
     // headerParent.remove()
   }
@@ -376,12 +377,10 @@ function setMeta() {
   })
   if (!meta) meta = document.querySelector('param[ve-config]')
 
-  let firstHeading = document.querySelector('h1, h2, h3')
-  console.log(firstHeading?.innerText.trim(), firstHeading?.textContent.trim(), firstHeading?.innerHTML.trim())
-  let firstHeadingText = firstHeading?.innerText.trim()
-  let firstParagraph = document.querySelector('p')?.innerText.trim()
+  let firstHeading = document.querySelector('h1, h2, h3')?.innerHTML.trim()
+  let firstParagraph = document.querySelector('p')?.innerHTML.trim()
 
-  console.log('firstHeading', firstHeading, firstHeadingText)
+  console.log('firstHeading', firstHeading)
   console.log('firstParagraph', firstParagraph)
 
   let jldEl = document.querySelector('script[type="application/ld+json"]')
