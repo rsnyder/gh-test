@@ -355,7 +355,7 @@ function restructure(rootEl) {
   let footer = main.querySelector('ve-footer')
   if (footer) {
     let toRemove = footer
-    while (toRemove.parentElement.tagName !== 'ARTICLE') toRemove = toRemove.parentElement 
+    while (toRemove.parentElement.tagName !== 'MAIN') toRemove = toRemove.parentElement 
     article.appendChild(footer)
     console.log('toRemove', toRemove)
     toRemove.remove()
