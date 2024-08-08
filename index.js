@@ -85,7 +85,6 @@ Object.entries(components).forEach(([tag, attrs]) => {
   tagMap[tag] = tagObj
   tagMap[tag.slice(3)] = tagObj
 })
-console.log(tagMap)
 
 function parseHeadline(s) {
   let tokens = []
@@ -372,19 +371,15 @@ function setMeta() {
   let firstHeading = document.querySelector('h1, h2, h3')?.innerHTML.trim()
   let firstParagraph = Array.from(document.querySelectorAll('p'))
     .find(p => {
-      console.log(p.childNodes[0].tagName)
       let ptext = p.childNodes.item(0).nodeValue?.trim()
-      // console.log('p', p, p.textContent.trim(), ptext)
-      console.log(p.childNodes[0].tagName !== 'CODE', ptext?.length, !/^\.\w+-\w+/.test(ptext))
-      return false
+      return p.childNodes[0].tagName !== 'CODE' && ptext?.length && !/^\.\w+-\w+/.test(ptext)
     })?.innerHTML.trim()
 
-  console.log('firstHeading', firstHeading)
+  // console.log('firstHeading', firstHeading)
   console.log('firstParagraph', firstParagraph)
 
   let jldEl = document.querySelector('script[type="application/ld+json"]')
   let seo = jldEl ? JSON.parse(jldEl.innerText) : {'@context':'https://schema.org', '@type':'WebSite', description:'', headline:'', name:'', url:''}
-  console.log('seo', seo)
   seo.url = location.href
 
   let title = meta?.getAttribute('title')
@@ -468,7 +463,6 @@ function mount(mountPoint, html) {
 }
 
 docReady(function() {  
-  console.log('docReady')
   setConfig()
   console.log(window.config)
   mount()
