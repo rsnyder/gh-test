@@ -809,9 +809,11 @@ function setViewersPosition() {
   let top = header.getBoundingClientRect().top
   let height = header.getBoundingClientRect().height
   let offset = top + height
-  viewers.style.top = `${offset}px`
-  viewers.style.height = `calc(100dvh - ${offset+2}px)`
-  // console.log(offset, parseInt(window.getComputedStyle(viewers).height.replace(/px/,'')))
+  if (viewers) {
+    viewers.style.top = `${offset}px`
+    viewers.style.height = `calc(100dvh - ${offset+2}px)`
+    // console.log(offset, parseInt(window.getComputedStyle(viewers).height.replace(/px/,'')))
+  }
 }
 
 // mount the content
@@ -827,7 +829,7 @@ function mount(mountPoint, html) {
 
   convertTags(contentEl)
   let article = restructure(contentEl)
-  // if (window.config.isJunctureV1) article = restructureForJ1(article)
+  if (window.config.isJunctureV1) article = restructureForJ1(article)
 
   mountPoint.replaceWith(article)
 
