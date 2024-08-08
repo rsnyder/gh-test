@@ -274,7 +274,7 @@ function convertTags(rootEl) {
           }
         }
       })
-      param.replaceWith(makeEl(parsed))
+      if (!window.config.isJunctureV1) param.replaceWith(makeEl(parsed))
     }
   })
   rootEl.querySelectorAll('code').forEach(codeEl => {
@@ -529,6 +529,8 @@ function restructureForJ1(article) {
       ...Object.keys(veTags).filter(tag => tag !== 've-map-marker' && tag !== 've-map-layer'),
       ...(mode === 'dev' ? ['data'] : [])
     ].join(' '))
+
+    console.log(veTags)
 
     Object.entries(veTags).forEach(([tag, tagProps]) => {
       if (tag === 've-map-marker' || tag === 've-map-layer') return
