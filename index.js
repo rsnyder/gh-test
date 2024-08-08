@@ -430,6 +430,11 @@ function restructure(rootEl) {
 function restructureForJ1(article) {
   console.log('restructuring for Juncture V1', article)
   console.log(article.cloneNode(true))
+
+  function serializeProps(props) {
+    return  Object.entries(props).map(([key, value]) => `${key}="${value}"`).join(' ').replace(/“/g, '&quot;').replace(/”/g, '&quot;')
+  }
+  
   Array.from(article.querySelectorAll('[data-id]')).forEach(seg => {
     if (seg.tagName === 'SECTION') return
 
