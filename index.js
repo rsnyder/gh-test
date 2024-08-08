@@ -456,11 +456,11 @@ function restructureForJ1(article) {
       params.push(sib)
       sib = sib.nextSibling
     }
-    console.log('params', id, params.map(p => Array.from(p.attributes).find(a => a.name.indexOf('ve-') === 0)?.name))
     params.forEach(p => viewersDiv.appendChild(p))
     wrapper.appendChild(viewersDiv)
 
     seg.replaceWith(wrapper)
+    console.log(seg)
   })
 
   Array.from(article.querySelectorAll('[data-id]')).forEach(seg => {
@@ -482,6 +482,7 @@ function restructureForJ1(article) {
       })
       parent = parent.parentElement
     }
+    console.log('params', id, params.map(p => Array.from(p.attributes).find(a => a.name.indexOf('ve-') === 0)?.name))
 
     const veTags = {}
     params.forEach(p => {
