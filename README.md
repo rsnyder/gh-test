@@ -1,6 +1,6 @@
 # GH Testing
 
-- [Juncture 1](j1)
-- [Juncture 2](j2)
-- [Juncture 3](j3)
-- [Mixed](mixed)
+- [Juncture 1](examples/j1)
+- [Juncture 2](examples/j2)
+- [Juncture 3](examples/j3)
+- [Mixed](examples/mixed)
