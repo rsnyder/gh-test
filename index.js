@@ -58,7 +58,10 @@ const components = {
     booleans: 'cards full left marker prefer-geojson popup-on-hover zoom-on-scroll zoom-on-click',
     positional: 'center caption'
   },
-  've-media': {},
+  've-media': {
+    // booleans: 'no-caption static repo-is-writable zoom-on-scroll',
+    positional: 'src caption'
+  },
   've-menu': {
     booleans: 'pdf-download-enabled'
   },
