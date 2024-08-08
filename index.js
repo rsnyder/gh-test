@@ -288,6 +288,7 @@ function restructure(rootEl) {
   if (styleSheet) main.appendChild(styleSheet.cloneNode(true))
   
   main.className = 'page-content markdown-body'
+  if (window.config.isJunctureV1) main.classList.add('j1')
   main.setAttribute('aria-label', 'Content')
   main.setAttribute('data-theme', 'light')
   let currentSection = main;
@@ -454,6 +455,11 @@ function setConfig() {
   }
 }
 
+function isJunctureV1(contentEl) {
+  console.log(contentEl)
+  return contentEl.querySelector('param[ve-config]') ? true : false
+}
+
 // mount the content
 function mount(mountPoint, html) {
   mountPoint = mountPoint || document.querySelector('body > article, body > main, body > section')
@@ -462,14 +468,17 @@ function mount(mountPoint, html) {
   let contentEl = document.createElement('main')
   contentEl.innerHTML = html
  
+  window.config.isJunctureV1 = isJunctureV1(contentEl)
+  console.log(window.config)
+
   convertTags(contentEl)
   let article = restructure(contentEl)
+
   mountPoint.replaceWith(article)
 }
 
 docReady(function() {  
   setConfig()
-  console.log(window.config)
   mount()
 })
 
