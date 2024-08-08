@@ -3,6 +3,7 @@ import 'https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'
 import * as yaml from 'https://cdn.jsdelivr.net/npm/yaml@2.3.4/browser/index.min.js'
 
 const mode = location.hostname === 'localhost' || location.pathname === '/editor' ? 'dev' : 'prod'
+const isMobile = ('ontouchstart' in document.documentElement && /mobi/i.test(navigator.userAgent) )
 
 function addLink(attrs) {
   let stylesheet = document.createElement('link')
@@ -558,6 +559,104 @@ function restructureForJ1(article) {
   return article
 }
 
+function setStickyOffsets(root) {
+  function topIsVisible(el) {
+    let bcr = el.getBoundingClientRect()
+    return el.tagName === 'VE-HEADER' || el.tagName === 'VE-BREADCRUMBS' || (bcr.top >= 0 && bcr.top <= window.innerHeight)
+  }
+
+  let stickyElems = Array.from(root.querySelectorAll('.sticky'))
+    .filter(stickyEl => topIsVisible(stickyEl))
+    .sort((a,b) => {
+        let aTop = a.getBoundingClientRect().top
+        let bTop = b.getBoundingClientRect().top
+        return aTop < bTop ? -1 : 1
+      })
+
+  if (stickyElems.length > 1) {
+    stickyElems[0].style.zIndex = `${stickyElems.length}`
+    for (let i = 1; i < stickyElems.length; i++) {
+      let bcr = stickyElems[i].getBoundingClientRect()
+      let left = bcr.x
+      let right = bcr.x + bcr.width
+      for (let j = i-1; j >= 0; --j) {
+        let priorSticky = stickyElems[j]
+        let bcrPrior = priorSticky.getBoundingClientRect()
+        let leftPrior = bcrPrior.x
+        let rightPrior = bcrPrior.x + bcrPrior.width
+        if ((leftPrior <= right) && (rightPrior >= left)) {
+          let priorTop = parseInt(priorSticky.style.top.replace(/px/,'')) || 0
+          if (stickyElems[i].style) {
+            stickyElems[i].style.top = `${Math.floor(priorTop + bcrPrior.height)}px`
+          }
+          break
+        }
+      }
+    }
+  }
+}
+
+let priorActiveParagraph
+let currentActiveParagraph
+
+function observeVisible(rootEl, setActiveParagraph, offset=0) {
+  setActiveParagraph = setActiveParagraph || false
+  let topMargin = offset + Array.from(rootEl.querySelectorAll('VE-HEADER'))
+  .map(stickyEl => (parseInt(stickyEl.style.top.replace(/px/,'')) || 0) + stickyEl.getBoundingClientRect().height)?.[0] || 0
+
+  isJunctureV1 = true
+
+  // console.log(`observeVisible: setActiveParagraph=${setActiveParagraph} topMargin=${topMargin} isJunctureV1=${isJunctureV1}`)
+
+  const visible = {}
+  const observer = new IntersectionObserver((entries, observer) => {
+    
+    for (const entry of entries) {
+      let para = entry.target
+      let paraId = para.id || para.parentElement?.id || ''
+      let intersectionRatio = entry.intersectionRatio
+      if (intersectionRatio > 0) visible[paraId] = {para, intersectionRatio}
+      else delete visible[paraId]
+    }
+
+    let sortedVisible = Object.values(visible)
+      .sort((a,b) => b.intersectionRatio - a.intersectionRatio || a.para.getBoundingClientRect().top - b.para.getBoundingClientRect().top)
+
+    // if (sortedVisible.length) console.log(sortedVisible)
+
+    if (setActiveParagraph) {
+        currentActiveParagraph = sortedVisible[0]?.para
+    } else {
+      let found = sortedVisible.find(e => e.para.classList.contains('active'))
+      if (found) currentActiveParagraph = found.para
+    }
+      
+    if (currentActiveParagraph !== priorActiveParagraph) {
+      // console.log('activeParagraph', currentActiveParagraph)
+
+      let priorViewers, currentViewers
+      if (isJunctureV1) {
+        priorViewers = priorActiveParagraph?.nextElementSibling
+        currentViewers = currentActiveParagraph?.nextElementSibling
+        if (priorViewers) priorViewers.classList.remove('active')
+      }
+
+      priorActiveParagraph = currentActiveParagraph
+      if (setActiveParagraph) { 
+        rootEl.querySelectorAll('p.active, ol.active, ul.active').forEach(p => p.classList.remove('active'))
+        currentActiveParagraph?.classList.add('active')
+        if (currentViewers) currentViewers.classList.add('active')
+      }
+
+      setStickyOffsets(rootEl)
+    }
+
+  }, { root: null, threshold: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], rootMargin: `${topMargin ? -topMargin : 0}px 0px 0px 0px`})
+
+  // target the elements to be observed
+  rootEl.querySelectorAll('p, .segment > ol, .segment > ul').forEach((paragraph) => observer.observe(paragraph))
+}
+
 function setMeta() {
   let meta
   let header
@@ -650,6 +749,27 @@ function isJunctureV1(contentEl) {
   return contentEl.querySelector('param[ve-config]') ? true : false
 }
 
+function readMoreSetup() {
+  const ps = document.querySelectorAll('.read-more p')
+  const observer = new ResizeObserver(entries => {
+    for (let entry of entries) {
+      entry.target.classList[entry.target.scrollHeight > (entry.contentRect.height + 10) ? 'add' : 'remove']('truncated')
+    }
+  })
+  ps.forEach(p => observer.observe(p))
+}
+
+function setViewersPosition() {
+  let header = document.querySelector('ve-header')
+  let viewers = document.querySelector('.viewers')
+  let top = header.getBoundingClientRect().top
+  let height = header.getBoundingClientRect().height
+  let offset = top + height
+  viewers.style.top = `${offset}px`
+  viewers.style.height = `calc(100dvh - ${offset+2}px)`
+  // console.log(offset, parseInt(window.getComputedStyle(viewers).height.replace(/px/,'')))
+}
+
 // mount the content
 function mount(mountPoint, html) {
   mountPoint = mountPoint || document.querySelector('body > article, body > main, body > section')
@@ -666,6 +786,16 @@ function mount(mountPoint, html) {
   if (window.config.isJunctureV1) article = restructureForJ1(article)
 
   mountPoint.replaceWith(article)
+
+  if (window.config.isJunctureV1 && !isMobile) {
+    document.addEventListener('scroll', () => setViewersPosition())
+    setTimeout(() => setViewersPosition(), 100)
+  }
+
+  // console.log(article.querySelector('ve-video[sync]'))
+  observeVisible(article, article.querySelector('ve-video[sync]') ? false : true)
+  readMoreSetup()
+  return article
 }
 
 docReady(function() {  
