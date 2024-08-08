@@ -456,6 +456,7 @@ function restructureForJ1(article) {
       params.push(sib)
       sib = sib.nextSibling
     }
+    console.log('params', params)
     params.forEach(p => viewersDiv.appendChild(p))
     wrapper.appendChild(viewersDiv)
 
@@ -481,7 +482,6 @@ function restructureForJ1(article) {
       })
       parent = parent.parentElement
     }
-    console.log('params', params)
 
     const veTags = {}
     params.forEach(p => {
