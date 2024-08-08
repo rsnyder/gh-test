@@ -427,6 +427,7 @@ function restructure(rootEl) {
 
 function restructureForJ1(article) {
   console.log('restructuring for Juncture V1', article)
+  console.log(article.cloneNode(true))
   Array.from(article.querySelectorAll('[data-id]')).forEach(seg => {
     if (seg.tagName === 'SECTION') return
 
@@ -835,7 +836,7 @@ function mount(mountPoint, html) {
     setTimeout(() => setViewersPosition(), 100)
   }
 
-  // console.log(article.querySelector('ve-video[sync]'))
+  console.log(article.querySelector('ve-video[sync]'))
   observeVisible(article, article.querySelector('ve-video[sync]') ? false : true)
   readMoreSetup()
   return article
