@@ -487,7 +487,7 @@ function restructureForJ1(article) {
     }
 
     function makeViewerEl(tagName, slotName, tagProps) {
-      // if (slotName !== 'data') console.log(`makeViewerEL ${slotName} ${Object.keys(tagProps[0] || {})}`)
+      console.log(`makeViewerEL ${tagName} ${slotName} ${Object.keys(tagProps[0] || {})}`)
       let viewerEl = document.createElement(tagName)
       viewerEl.setAttribute('slot', slotName)
       if (slotName === 've-compare') {
@@ -518,6 +518,7 @@ function restructureForJ1(article) {
       } else {
         console.log(`makeViewer: slotName ${slotName} not recognized, props=${Object.keys(tagProps[0] || {})}`)
       }
+      console.log(viewerEl)
       return viewerEl
     }
 
