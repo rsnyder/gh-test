@@ -280,9 +280,10 @@ function convertTags(rootEl) {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag) {
       if (codeEl.parentElement.tagName === 'PRE') codeEl = codeEl.parentElement
-      codeEl.parentElement.className = ''
       codeEl.parentElement.removeAttribute('id')
       codeEl.parentElement.removeAttribute('data-id')
+      codeEl.parentElement.removeAttribute('class')
+      codeEl.parentElement.parentElement.className = 'segment'
       codeEl.replaceWith(makeEl(parsed))
     }
   })
