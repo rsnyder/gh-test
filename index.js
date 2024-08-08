@@ -350,7 +350,6 @@ function restructure(rootEl) {
   if (window.config.isJunctureV1) {
     article.classList.add('j1')
     let veConfig = main.querySelector('param[ve-config]')
-    console.log(veConfig)
     header = document.createElement('ve-header')
     header.className = 'sticky'
     Array.from(veConfig?.attributes || []).forEach(attr => {
@@ -380,6 +379,44 @@ function restructure(rootEl) {
     toRemove.remove()
   }
 
+  return article
+}
+
+function restructureForJ1(article) {
+  console.log('restructuring for Juncture V1', article)
+  Array.from(article.querySelectorAll('[data-id]')).forEach(seg => {
+    if (seg.tagName === 'SECTION') return
+
+    if (!seg.innerHTML.trim()) { // remove empty segments
+      seg.remove()
+      return
+    }
+
+    let id = seg.getAttribute('data-id') || ''
+    let wrapper = document.createElement('div')
+    wrapper.setAttribute('data-id', id)
+    wrapper.id = id
+    wrapper.className = seg.className
+    seg.removeAttribute('id')
+    seg.removeAttribute('data-id')
+    seg.className = ''
+    wrapper.appendChild(seg.cloneNode(true))
+    let viewersDiv = document.createElement('div')
+
+    viewersDiv.setAttribute('data-id', id)
+    viewersDiv.className = 'viewers'
+
+    let params = []
+    let sib = seg.nextSibling
+    while (sib && sib.tagName === 'PARAM') {
+      params.push(sib)
+      sib = sib.nextSibling
+    }
+    params.forEach(p => viewersDiv.appendChild(p))
+    wrapper.appendChild(viewersDiv)
+
+    seg.replaceWith(wrapper)
+  })
   return article
 }
 
@@ -488,6 +525,7 @@ function mount(mountPoint, html) {
 
   convertTags(contentEl)
   let article = restructure(contentEl)
+  if (window.config.isJunctureV1) article = restructureForJ1(article)
 
   mountPoint.replaceWith(article)
 }
