@@ -12,7 +12,7 @@ header "Juncture Examples" subtitle="The Amalfi Coast" background=wc:AmalfiCoast
 
 .ve-image wc:Sunflower_sky_backdrop.jpg class=right caption="Juncture 2 syntax"
 
-<ve-image src="wc:Sunflower_sky_backdrop.jpg" class="right" caption="Web component syntax"></ve-image>
+<ve-image src="wc:Sunflower_sky_backdrop.jpg" class="right" caption="Web components syntax"></ve-image>
 
 <param ve-image src="wc:Sunflower_sky_backdrop.jpg" class="right" caption="Juncture 1 syntax">
 
