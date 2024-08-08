@@ -253,7 +253,7 @@ function convertTags(rootEl) {
     })
   Array.from(rootEl.querySelectorAll('param'))
   .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length)
-  .filter(param => param.attributes.getAttribute('ve-config') === null)
+  .filter(param => param.getAttribute('ve-config') === null)
   .forEach(param => {
     let tag = Array.from(param.attributes).find(attr => attr.name.indexOf('ve-') === 0).name
     if (tag) {
