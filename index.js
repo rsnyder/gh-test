@@ -184,7 +184,6 @@ function parseCodeEl(codeEl) {
   if (parsed.tag === 've-mermaid') {
     parsed.raw = codeEl.textContent.split('\n').slice(1).join('\n')
   } else if (parsed.tag === 've-media') {
-    console.log(parsed)
     parsed.tag = 've-image' //TODO: implement ve-media conversion
   } else if (codeElems.length > 1) {
     parsed.args = parsed.args ? [...parsed.args, ...codeElems.slice(1)] : codeElems.slice(1)
@@ -428,8 +427,7 @@ function restructure(rootEl) {
 }
 
 function restructureForJ1(article) {
-  console.log('restructuring for Juncture V1', article)
-  console.log(article.cloneNode(true))
+  // console.log(article.cloneNode(true))
 
   function serializeProps(props) {
     return  Object.entries(props).map(([key, value]) => `${key}="${value}"`).join(' ').replace(/“/g, '&quot;').replace(/”/g, '&quot;')
@@ -463,13 +461,10 @@ function restructureForJ1(article) {
       params.push(sib)
       sib = sib.nextSibling
     }
-    console.log('params', id, params.map(p => Array.from(p.attributes).find(a => a.name.indexOf('ve-') === 0)?.name))
-
     params.forEach(p => viewersDiv.appendChild(p))
     wrapper.appendChild(viewersDiv)
 
     seg.replaceWith(wrapper)
-    console.log(wrapper)
   })
 
   Array.from(article.querySelectorAll('[data-id]')).forEach(seg => {
@@ -484,14 +479,12 @@ function restructureForJ1(article) {
     let idx = params.length
     let parent = viewersDiv.parentElement
     while (parent && parent.tagName !== 'ARTICLE') {
-      console.log(parent.querySelectorAll(':scope > param'))
       Array.from(parent.querySelectorAll(':scope > param')).forEach(param => {
         params.push({...Object.fromEntries(Array.from(param.attributes).map(a => [a.name, a.value])), ...{idx} })
         idx++
       })
       parent = parent.parentElement
     }
-    console.log(params)
 
     const veTags = {}
     params.forEach(p => {
@@ -505,7 +498,6 @@ function restructureForJ1(article) {
       if (!veTags[tag]) veTags[tag] = []
       veTags[tag].push(p)
     })
-    console.log(veTags)
 
     let entities = []
     Object.values(veTags['ve-entity'] || []).forEach(veEntity => {
@@ -540,7 +532,6 @@ function restructureForJ1(article) {
     }
 
     function makeViewerEl(tagName, slotName, tagProps) {
-      console.log(`makeViewerEL ${tagName} ${slotName} ${Object.keys(tagProps[0] || {})}`)
       let viewerEl = document.createElement(tagName)
       viewerEl.setAttribute('slot', slotName)
       if (slotName === 've-compare') {
@@ -571,7 +562,6 @@ function restructureForJ1(article) {
       } else {
         console.log(`makeViewer: slotName ${slotName} not recognized, props=${Object.keys(tagProps[0] || {})}`)
       }
-      console.log(viewerEl)
       return viewerEl
     }
 
@@ -672,8 +662,6 @@ function observeVisible(rootEl, setActiveParagraph, offset=0) {
 
   isJunctureV1 = true
 
-  // console.log(`observeVisible: setActiveParagraph=${setActiveParagraph} topMargin=${topMargin} isJunctureV1=${isJunctureV1}`)
-
   const visible = {}
   const observer = new IntersectionObserver((entries, observer) => {
     
@@ -688,8 +676,6 @@ function observeVisible(rootEl, setActiveParagraph, offset=0) {
     let sortedVisible = Object.values(visible)
       .sort((a,b) => b.intersectionRatio - a.intersectionRatio || a.para.getBoundingClientRect().top - b.para.getBoundingClientRect().top)
 
-    // if (sortedVisible.length) console.log(sortedVisible)
-
     if (setActiveParagraph) {
         currentActiveParagraph = sortedVisible[0]?.para
     } else {
@@ -698,7 +684,6 @@ function observeVisible(rootEl, setActiveParagraph, offset=0) {
     }
       
     if (currentActiveParagraph !== priorActiveParagraph) {
-      // console.log('activeParagraph', currentActiveParagraph)
 
       let priorViewers, currentViewers
       if (isJunctureV1) {
@@ -834,7 +819,6 @@ function setViewersPosition() {
   if (viewers) {
     viewers.style.top = `${offset}px`
     viewers.style.height = `calc(100dvh - ${offset+2}px)`
-    // console.log(offset, parseInt(window.getComputedStyle(viewers).height.replace(/px/,'')))
   }
 }
 
@@ -860,7 +844,6 @@ function mount(mountPoint, html) {
     setTimeout(() => setViewersPosition(), 100)
   }
 
-  console.log(article.querySelector('ve-video[sync]'))
   observeVisible(article, article.querySelector('ve-video[sync]') ? false : true)
   readMoreSetup()
   return article
