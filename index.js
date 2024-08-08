@@ -341,9 +341,9 @@ function restructure(rootEl) {
   if (header) {
     article.appendChild(header)
     let headerParent = header.parentElement
-    while (headerParent?.tagName !== 'BODY') {
-      headerParent = headerParent.parentElement
+    while (headerParent.parentElement.tagName !== 'BODY') {
       console.log('headerParent', headerParent)
+      headerParent = headerParent.parentElement 
     }
     // headerParent.remove()
   }
@@ -377,6 +377,7 @@ function setMeta() {
   if (!meta) meta = document.querySelector('param[ve-config]')
 
   let firstHeading = document.querySelector('h1, h2, h3')
+  console.log(firstHeading?.innerText.trim(), firstHeading?.textContent.trim(), firstHeading?.innerHTML.trim())
   let firstHeadingText = firstHeading?.innerText.trim()
   let firstParagraph = document.querySelector('p')?.innerText.trim()
 
