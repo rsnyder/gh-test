@@ -335,7 +335,7 @@ function restructure(rootEl) {
       param.remove()
     }
   })
-  
+
   Array.from(rootEl?.children || []).forEach(el => {
     if (el.tagName[0] === 'H' && isNumeric(el.tagName.slice(1))) {
       let heading = el
@@ -480,6 +480,7 @@ function restructureForJ1(article) {
       })
       parent = parent.parentElement
     }
+    console.log('params', params)
 
     const veTags = {}
     params.forEach(p => {
@@ -493,6 +494,7 @@ function restructureForJ1(article) {
       if (!veTags[tag]) veTags[tag] = []
       veTags[tag].push(p)
     })
+    console.log(veTags)
 
     let entities = []
     Object.values(veTags['ve-entity'] || []).forEach(veEntity => {
@@ -569,8 +571,6 @@ function restructureForJ1(article) {
       ...Object.keys(veTags).filter(tag => tag !== 've-map-marker' && tag !== 've-map-layer'),
       ...(mode === 'dev' ? ['data'] : [])
     ].join(' '))
-
-    console.log(veTags)
 
     Object.entries(veTags).forEach(([tag, tagProps]) => {
       if (tag === 've-map-marker' || tag === 've-map-layer') return
@@ -826,7 +826,7 @@ function mount(mountPoint, html) {
 
   convertTags(contentEl)
   let article = restructure(contentEl)
-  if (window.config.isJunctureV1) article = restructureForJ1(article)
+  // if (window.config.isJunctureV1) article = restructureForJ1(article)
 
   mountPoint.replaceWith(article)
 
