@@ -361,7 +361,6 @@ function setMeta() {
   let meta
   let header
   Array.from(document.getElementsByTagName('*')).forEach(el => {  
-    // console.log(el)
     if (!/^\w+-\w+/.test(el.tagName)) return
     if (el.tagName.split('-')[1] === 'META') meta = el
     else if (el.tagName.split('-')[1] === 'HEADER') header = el
@@ -374,9 +373,6 @@ function setMeta() {
       let ptext = p.childNodes.item(0).nodeValue?.trim()
       return p.childNodes[0].tagName !== 'CODE' && ptext?.length && !/^\.\w+-\w+/.test(ptext)
     })?.innerHTML.trim()
-
-  // console.log('firstHeading', firstHeading)
-  console.log('firstParagraph', firstParagraph)
 
   let jldEl = document.querySelector('script[type="application/ld+json"]')
   let seo = jldEl ? JSON.parse(jldEl.innerText) : {'@context':'https://schema.org', '@type':'WebSite', description:'', headline:'', name:'', url:''}
