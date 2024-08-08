@@ -403,7 +403,7 @@ function restructure(rootEl) {
       if (attr.name === 'subtitle' || attr.name === 'author') header.setAttribute('subtitle', attr.value)
     })
     article.appendChild(header)
-    veConfig.remove()
+    veConfig?.remove()
   } else {
     header = main.querySelector('ve-header')
     if (header) {
