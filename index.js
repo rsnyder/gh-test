@@ -382,9 +382,9 @@ function restructure(rootEl) {
         el.setAttribute('data-id', segId)
         el.id = segId
         el.classList.add('segment')
-        if (el !== sectionParam) {
-          currentSection.innerHTML += el.outerHTML
-        }
+      }
+      if (el !== sectionParam) {
+        currentSection.innerHTML += el.outerHTML
       }
     }
   })
