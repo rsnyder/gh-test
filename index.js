@@ -375,7 +375,7 @@ function setMeta() {
       console.log(p.childNodes[0].tagName)
       let ptext = p.childNodes.item(0).nodeValue?.trim()
       // console.log('p', p, p.textContent.trim(), ptext)
-      console.log(p.childNodes[0].tagName !== 'CODE', ptext.length, !/^\.\w+-\w+/.test(ptext))
+      console.log(p.childNodes[0].tagName !== 'CODE', ptext?.length, !/^\.\w+-\w+/.test(ptext))
       return false
     })?.innerHTML.trim()
 
