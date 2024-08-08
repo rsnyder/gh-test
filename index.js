@@ -288,7 +288,6 @@ function restructure(rootEl) {
   if (styleSheet) main.appendChild(styleSheet.cloneNode(true))
   
   main.className = 'page-content markdown-body'
-  if (window.config.isJunctureV1) main.classList.add('j1')
   main.setAttribute('aria-label', 'Content')
   main.setAttribute('data-theme', 'light')
   let currentSection = main;
@@ -345,6 +344,7 @@ function restructure(rootEl) {
   })
 
   let article = document.createElement('article')
+  if (window.config.isJunctureV1) article.classList.add('j1')
 
   let header = main.querySelector('ve-header')
   if (header) {
@@ -456,7 +456,6 @@ function setConfig() {
 }
 
 function isJunctureV1(contentEl) {
-  console.log(contentEl)
   return contentEl.querySelector('param[ve-config]') ? true : false
 }
 
