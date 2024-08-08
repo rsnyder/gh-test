@@ -339,24 +339,22 @@ function restructure(rootEl) {
 
   let header = main.querySelector('ve-header')
   if (header) {
-    article.appendChild(header)
     let toRemove = header
     while (toRemove.parentElement.tagName !== 'ARTICLE') toRemove = toRemove.parentElement 
+    article.appendChild(header)
     console.log('toRemove', toRemove)
-    // toRemove.remove()
+    toRemove.remove()
   }
 
   article.appendChild(main)
 
   let footer = main.querySelector('ve-footer')
   if (footer) {
+    let toRemove = footer
+    while (toRemove.parentElement.tagName !== 'ARTICLE') toRemove = toRemove.parentElement 
     article.appendChild(footer)
-    let footerParent = footer.parentElement
-    while (footerParent?.tagName !== 'BODY') {
-      footerParent = footerParent.parentElement
-      console.log('footerParent', footerParent)
-    }
-    // footerParent.remove()
+    console.log('toRemove', toRemove)
+    toRemove.remove()
   }
 
   return article
@@ -375,7 +373,12 @@ function setMeta() {
   if (!meta) meta = document.querySelector('param[ve-config]')
 
   let firstHeading = document.querySelector('h1, h2, h3')?.innerHTML.trim()
-  let firstParagraph = document.querySelector('p')?.innerHTML.trim()
+  let firstParagraph = Array.from(document.querySelectorAll('p'))
+    .find(p => {
+      let ptext = p.childNodes.item(0).nodeValue?.trim()
+      console.log('p', p, p.textContent.trim(), ptext)
+      return ptext?.length > 0
+    })?.innerHTML.trim()
 
   console.log('firstHeading', firstHeading)
   console.log('firstParagraph', firstParagraph)
