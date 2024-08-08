@@ -417,6 +417,143 @@ function restructureForJ1(article) {
 
     seg.replaceWith(wrapper)
   })
+
+  Array.from(article.querySelectorAll('[data-id]')).forEach(seg => {
+    if (seg.tagName === 'SECTION') return
+    let id = seg.getAttribute('data-id') || ''
+    let para = seg.querySelector('p, ol, ul')
+    let viewersDiv = seg.querySelector('.viewers')
+    if (!viewersDiv) return
+    
+    const params = Array.from(viewersDiv.querySelectorAll(':scope > param'))
+      .map((param, idx) => ({ ...Object.fromEntries(Array.from(param.attributes).map(a => [a.name, a.value])), ...{idx} }))
+    
+    let idx = params.length
+    let parent = viewersDiv.parentElement
+    while (parent && parent.tagName !== 'ARTICLE') {
+      Array.from(parent.querySelectorAll(':scope > param')).forEach(param => {
+        params.push({...Object.fromEntries(Array.from(param.attributes).map(a => [a.name, a.value])), ...{idx} })
+        idx++
+      })
+      parent = parent.parentElement
+    }
+
+    const veTags = {}
+    params.forEach(p => {
+      let tag = Object.keys(p).find(k => k.indexOf('ve-') === 0 && !p[k])
+      if (!tag) {
+        tag = 've-entity'
+        p[tag] = ''
+      } else if (tag === 've-d3plus-ring-network') {
+        tag = 've-visjs'
+      }
+      if (!veTags[tag]) veTags[tag] = []
+      veTags[tag].push(p)
+    })
+
+    let entities = []
+    Object.values(veTags['ve-entity'] || []).forEach(veEntity => {
+      let qid = veEntity.eid || veEntity.qid
+      let aliases = veEntity.aliases?.split('|').filter(a => a) || []
+      let file = veEntity.file ||veEntity.article
+      if (aliases.length || file) {
+        if (!window.customEntityData[qid]) window.customEntityData[qid] = {aliases: aliases, file: file}
+        }
+      entities.push(qid)
+    })
+    delete veTags['ve-entity']
+
+    para?.setAttribute('data-entities', entities.join(' '))
+
+    function propsList(tagProps) {
+      let ul = document.createElement('ul')
+      tagProps.forEach(tp => {
+        let li = document.createElement('li')
+        li.innerText = serializeProps(tp)
+        ul.appendChild(li)
+      })
+      return ul
+    }
+
+    function setElProps(el, props, nameMap) {
+      Object.entries(props)
+        .filter(([key, value]) => nameMap[key] !== undefined)
+        .forEach(([key, value]) => {
+          el.setAttribute(nameMap[key] || key, value === 'false' ? '' : value === 'true' ? null : value)
+        })
+    }
+
+    function makeViewerEl(tagName, slotName, tagProps) {
+      // if (slotName !== 'data') console.log(`makeViewerEL ${slotName} ${Object.keys(tagProps[0] || {})}`)
+      let viewerEl = document.createElement(tagName)
+      viewerEl.setAttribute('slot', slotName)
+      if (slotName === 've-compare') {
+        setElProps(viewerEl, tagProps[0], {caption:''})
+        viewerEl.appendChild(propsList(tagProps))
+      } else if (slotName === 've-iframe') {
+        setElProps(viewerEl, tagProps[0], {allow:'', allowfullscreen:'', allowtransparency:'', frameborder:'', loading:'', name:'', src:''})
+      } else if (slotName === 've-image' || slotName === 've-gallery') {
+        console.log('ve-image', tagProps)
+        if (tagProps.length === 1) {
+          setElProps(viewerEl, tagProps[0], {attribution:'', caption:'', data:'', 'data-id':'', description:'', 'fit':'', label:'', license:'', src:'', title:'', url:'', 'zoom-on-scroll':''})
+        } else {
+          setElProps(viewerEl, tagProps[0], {'zoom-on-scroll':''})
+          viewerEl.appendChild(propsList(tagProps))
+        }
+      } else if (slotName === 've-knightlab-timeline') {
+        setElProps(viewerEl, tagProps[0], {caption:'', 'hash-bookmark':'', 'initial-zoom':'', source:'', 'timenav-position':''})
+      } else if (slotName === 've-map') {
+        setElProps(viewerEl, tagProps[0], {basemap:'basemaps', caption:'', center:'', data:'', 'data-id':'', entities:'', 'gesture-handling':'', 'gh-dir':'', marker:'', overlay:'', 'prefer-geojson':'', 'scroll-wheel-zoom':'', title:'', zoom:'', 'zoom-on-click':''})
+        viewerEl.appendChild(propsList(tagProps.slice(1)))
+      } else if (slotName === 've-plant-specimen') {
+        setElProps(viewerEl, tagProps[0], {caption:'', eid:'', jpid:'', max:'', qid:'', 'taxon-name':'', wdid:''})
+      } else if (slotName === 've-video') {
+        setElProps(viewerEl, tagProps[0], {alt:'', autoplay:'', caption:'', 'data-id':'', end:'', id:'', muted:'', 'no-caption':'', poster:'', src:'', start:'', sync:'', vid:''})
+      } else if (slotName === 've-visjs') {
+        setElProps(viewerEl, tagProps[0], {caption:'', edges:'', hierarchical:'', nodes:'', title:'caption', url:''})
+      } else if (slotName === 'data') {
+        viewerEl.appendChild(propsList(tagProps))
+      } else {
+        console.log(`makeViewer: slotName ${slotName} not recognized, props=${Object.keys(tagProps[0] || {})}`)
+      }
+      return viewerEl
+    }
+
+    let j1Viewers = document.createElement('ve-j1-viewers-slots')
+    j1Viewers.dataset.id = id
+    viewersDiv.appendChild(j1Viewers)
+    j1Viewers.setAttribute('viewers', [
+      ...Object.keys(veTags).filter(tag => tag !== 've-map-marker' && tag !== 've-map-layer'),
+      ...(mode === 'dev' ? ['data'] : [])
+    ].join(' '))
+
+    Object.entries(veTags).forEach(([tag, tagProps]) => {
+      if (tag === 've-map-marker' || tag === 've-map-layer') return
+      tagProps[0].entities = entities.join(' ')
+      tagProps[0]['data-id'] = j1Viewers.dataset.id
+      if (tag === 've-map') {
+        j1Viewers.appendChild(makeViewerEl('ve-map', tag,
+          [...tagProps,
+           ...Object.values(veTags['ve-map-marker'] || {}), ...Object.values(veTags['ve-map-layer'] || {})
+          ].sort((a,b) => a.idx - b.idx)
+        ))
+      } else {
+        j1Viewers.appendChild(makeViewerEl(tag, tag, tagProps))
+      }
+    })
+    j1Viewers.appendChild(makeViewerEl('div', 'data', params))
+
+  })
+
+  Array.from(article.querySelectorAll('.segment')).forEach(seg => {
+    let viewers = seg.children[1]
+    let parent = seg.parentElement
+    while (parent && parent.tagName !== 'ARTICLE') {
+      parent.querySelectorAll(':scope > param').forEach(param => viewers.appendChild(param.cloneNode(true)))
+      parent = parent.parentElement
+    }
+  })
+  
   return article
 }
 
