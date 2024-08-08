@@ -340,13 +340,8 @@ function restructure(rootEl) {
   let header = main.querySelector('ve-header')
   if (header) {
     let toRemove = header
-    console.log(toRemove.parentElement)
-    while (toRemove.parentElement.tagName !== 'MAIN') {
-      toRemove = toRemove.parentElement 
-      console.log(toRemove.parentElement)
-    }
+    while (toRemove.parentElement.tagName !== 'MAIN') toRemove = toRemove.parentElement 
     article.appendChild(header)
-    console.log('toRemove', toRemove)
     toRemove.remove()
   }
 
@@ -357,7 +352,6 @@ function restructure(rootEl) {
     let toRemove = footer
     while (toRemove.parentElement.tagName !== 'MAIN') toRemove = toRemove.parentElement 
     article.appendChild(footer)
-    console.log('toRemove', toRemove)
     toRemove.remove()
   }
 
@@ -365,7 +359,6 @@ function restructure(rootEl) {
 }
 
 function setMeta() {
-  console.log('setMeta')
   let meta
   let header
   Array.from(document.getElementsByTagName('*')).forEach(el => {  
@@ -379,6 +372,7 @@ function setMeta() {
   let firstHeading = document.querySelector('h1, h2, h3')?.innerHTML.trim()
   let firstParagraph = Array.from(document.querySelectorAll('p'))
     .find(p => {
+      console.log(p.childNodes)
       let ptext = p.childNodes.item(0).nodeValue?.trim()
       console.log('p', p, p.textContent.trim(), ptext)
       return false
