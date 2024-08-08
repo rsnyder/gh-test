@@ -341,7 +341,7 @@ function restructure(rootEl) {
   if (header) {
     let toRemove = header
     console.log(toRemove.parentElement)
-    while (toRemove.parentElement.tagName !== 'ARTICLE') {
+    while (toRemove.parentElement !== rootEl) {
       toRemove = toRemove.parentElement 
       console.log(toRemove.parentElement)
     }
