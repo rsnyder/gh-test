@@ -278,7 +278,14 @@ function convertTags(rootEl) {
   })
   rootEl.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
-    if (parsed.tag) codeEl.replaceWith(makeEl(parsed))
+    if (parsed.tag) {
+      if (codeEl.parentElement.tagName === 'PRE') codeEl = codeEl.parentElement.parentElement
+      codeEl.parentElement.className = ''
+      codeEl.parentElement.removeAttribute('id')
+      codeEl.parentElement.removeAttribute('data-id')
+      codeEl.replaceWith(makeEl(parsed))
+      console.log(codeEl.parentElement)
+    }
   })
 }
 
