@@ -253,6 +253,7 @@ function convertTags(rootEl) {
     })
   Array.from(rootEl.querySelectorAll('param'))
   .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length)
+  .filter(param => param.attributes.getAttribute('ve-config') === null)
   .forEach(param => {
     let tag = Array.from(param.attributes).find(attr => attr.name.indexOf('ve-') === 0).name
     if (tag) {
@@ -349,6 +350,7 @@ function restructure(rootEl) {
   if (window.config.isJunctureV1) {
     article.classList.add('j1')
     let veConfig = rootEl.querySelector('param[ve-config]')
+    console.log(veConfig)
     header = document.createElement('ve-header')
     header.className = 'sticky'
     Array.from(veConfig?.attributes || []).forEach(attr => {
@@ -356,7 +358,8 @@ function restructure(rootEl) {
       if (attr.name === 'title') header.setAttribute('title', attr.value)
       if (attr.name === 'subtitle' || attr.name === 'author') header.setAttribute('subtitle', attr.value)
     })
-    // veConfig.remove()
+    article.appendChild(header)
+    veConfig.remove()
   } else {
     header = main.querySelector('ve-header')
     if (header) {
