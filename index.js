@@ -395,6 +395,33 @@ function restructure(rootEl) {
     }
   })
 
+  Array.from(main.querySelectorAll('a'))
+    .filter(anchorElem => anchorElem.href.indexOf('mailto:') < 0)
+    .forEach(anchorElem => {
+      let link
+      try {
+        link = new URL(anchorElem.href)
+      } catch (e) {
+        console.log(e)
+        console.log(anchorElem.href)
+        return
+      }
+      let path = link.pathname.split('/').filter(p => p)
+      if (path.length === 0) return
+      let qid = /^Q\d+$/.test(path[path.length-1]) ? path[path.length-1] : null
+      let isEntityPath = path.find(pe => pe[0] === '~')
+      if (qid || isEntityPath) {
+        let mdpEntityInfobox = document.createElement('ve-entity-infobox')
+        mdpEntityInfobox.innerHTML = anchorElem.innerHTML
+        if (qid) mdpEntityInfobox.setAttribute('qid', qid)
+        else {
+          let pathIdx = (window.config?.baseurl && link.pathname.indexOf(window.config?.baseurl) === 0) ? 1 : 0
+          mdpEntityInfobox.setAttribute('file', path.slice(pathIdx).map(pe => pe.replace(/~/,'')).filter(pe => pe).join('/'))
+        }
+        anchorElem.replaceWith(mdpEntityInfobox)
+      }
+    })
+
   let header, footer
   let article = document.createElement('article')
 
