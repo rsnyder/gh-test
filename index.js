@@ -274,7 +274,7 @@ function convertTags(rootEl) {
           }
         }
       })
-      if (!window.config.isJunctureV1) param.replaceWith(makeEl(parsed))
+      // if (!window.config.isJunctureV1) param.replaceWith(makeEl(parsed))
     }
   })
   rootEl.querySelectorAll('code').forEach(codeEl => {
@@ -288,6 +288,15 @@ function restructure(rootEl) {
   let styleSheet = rootEl.querySelector('style')
   deleteAllComments(rootEl)
 
+  // Move child params to be siblings with parent element
+  rootEl.querySelectorAll('ul, ol').forEach(list => {
+    let ref = list
+    list.querySelectorAll('param').forEach(param => {
+      ref.parentNode.insertBefore(param, ref.nextSibling)
+      ref = param
+    })
+  })
+
   let main = document.createElement('main')
   if (styleSheet) main.appendChild(styleSheet.cloneNode(true))
   
@@ -296,6 +305,37 @@ function restructure(rootEl) {
   main.setAttribute('data-theme', 'light')
   let currentSection = main;
   let sectionParam
+
+  // Converts empty headings (changed to paragraphs by markdown converter) to headings with the correct level
+  Array.from(rootEl?.querySelectorAll('p'))
+  .filter(p => /^[#*]{1,6}$/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
+  .forEach(p => {
+    let ptext = p.childNodes.item(0).nodeValue?.trim()
+    let codeEl = p.querySelector('code')
+    let heading = document.createElement(`h${ptext?.length}`)
+    p.replaceWith(heading)
+    if (codeEl) {
+      let codeWrapper = document.createElement('p')
+      codeWrapper.appendChild(codeEl)
+      heading.parentElement?.insertBefore(codeWrapper, heading.nextSibling)
+    }
+  })
+
+  // For compatibility with Juncture V1
+  Array.from(rootEl?.querySelectorAll('param'))
+  .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length === 0)
+  .forEach(param => {
+    let priorEl = param.previousElementSibling
+    param.classList.forEach(c => priorEl?.classList.add(c))
+    let idAttr = Array.from(param.attributes).find(attr => attr.name === 'id')
+    let styleAttr = Array.from(param.attributes).find(attr => attr.name === 'style')
+    if (idAttr || styleAttr) {
+      if (idAttr) priorEl?.setAttribute('id', idAttr.value)
+      if (styleAttr) priorEl?.setAttribute('style', styleAttr.value)
+      param.remove()
+    }
+  })
+  
   Array.from(rootEl?.children || []).forEach(el => {
     if (el.tagName[0] === 'H' && isNumeric(el.tagName.slice(1))) {
       let heading = el
