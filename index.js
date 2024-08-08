@@ -340,13 +340,10 @@ function restructure(rootEl) {
   let header = main.querySelector('ve-header')
   if (header) {
     article.appendChild(header)
-    let headerParent = header.parentElement
-    console.log('headerParent', headerParent)
-    while (headerParent.parentElement) {
-      headerParent = headerParent.parentElement 
-      console.log('headerParent', headerParent)
-    }
-    // headerParent.remove()
+    let toRemove = header
+    while (toRemove.parentElement.tagName !== 'ARTICLE') toRemove = toRemove.parentElement 
+    console.log('toRemove', toRemove)
+    // toRemove.remove()
   }
 
   article.appendChild(main)
