@@ -456,7 +456,7 @@ function restructureForJ1(article) {
       params.push(sib)
       sib = sib.nextSibling
     }
-    console.log('params', params)
+    console.log('params', id, params.map(p => Array.from(p.attributes).find(a => a.name.indexOf('ve-') === 0)?.name))
     params.forEach(p => viewersDiv.appendChild(p))
     wrapper.appendChild(viewersDiv)
 
