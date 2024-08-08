@@ -343,20 +343,33 @@ function restructure(rootEl) {
     }
   })
 
+  let header, footer
   let article = document.createElement('article')
-  if (window.config.isJunctureV1) article.classList.add('j1')
 
-  let header = main.querySelector('ve-header')
-  if (header) {
-    let toRemove = header
-    while (toRemove.parentElement.tagName !== 'MAIN') toRemove = toRemove.parentElement 
-    article.appendChild(header)
-    toRemove.remove()
+  if (window.config.isJunctureV1) {
+    article.classList.add('j1')
+    let veConfig = main.querySelector('param[ve-config]')
+    header = document.createElement('ve-header')
+    header.className = 'sticky'
+    Array.from(veConfig?.attributes || []).forEach(attr => {
+      if (attr.name === 'banner') header.setAttribute('background', attr.value)
+      if (attr.name === 'title') header.setAttribute('title', attr.value)
+      if (attr.name === 'subtitle' || attr.name === 'author') header.setAttribute('subtitle', attr.value)
+    })
+    veConfig.remove()
+  } else {
+    header = main.querySelector('ve-header')
+    if (header) {
+      let toRemove = header
+      while (toRemove.parentElement.tagName !== 'MAIN') toRemove = toRemove.parentElement 
+      article.appendChild(header)
+      toRemove.remove()
+    }
   }
 
   article.appendChild(main)
 
-  let footer = main.querySelector('ve-footer')
+  footer = main.querySelector('ve-footer')
   if (footer) {
     let toRemove = footer
     while (toRemove.parentElement.tagName !== 'MAIN') toRemove = toRemove.parentElement 
