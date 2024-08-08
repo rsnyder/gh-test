@@ -2,6 +2,8 @@ import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import 'https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'
 import * as yaml from 'https://cdn.jsdelivr.net/npm/yaml@2.3.4/browser/index.min.js'
 
+const mode = location.hostname === 'localhost' || location.pathname === '/editor' ? 'dev' : 'prod'
+
 function addLink(attrs) {
   let stylesheet = document.createElement('link')
   Object.entries(attrs).map(([key, value]) => stylesheet.setAttribute(key, value))
@@ -493,7 +495,6 @@ function restructureForJ1(article) {
       } else if (slotName === 've-iframe') {
         setElProps(viewerEl, tagProps[0], {allow:'', allowfullscreen:'', allowtransparency:'', frameborder:'', loading:'', name:'', src:''})
       } else if (slotName === 've-image' || slotName === 've-gallery') {
-        console.log('ve-image', tagProps)
         if (tagProps.length === 1) {
           setElProps(viewerEl, tagProps[0], {attribution:'', caption:'', data:'', 'data-id':'', description:'', 'fit':'', label:'', license:'', src:'', title:'', url:'', 'zoom-on-scroll':''})
         } else {
@@ -553,7 +554,7 @@ function restructureForJ1(article) {
       parent = parent.parentElement
     }
   })
-  
+
   return article
 }
 
