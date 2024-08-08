@@ -58,6 +58,7 @@ const components = {
     booleans: 'cards full left marker prefer-geojson popup-on-hover zoom-on-scroll zoom-on-click',
     positional: 'center caption'
   },
+  've-media': {},
   've-menu': {
     booleans: 'pdf-download-enabled'
   },
@@ -176,7 +177,12 @@ function parseCodeEl(codeEl) {
   let parsed = parseHeadline(codeElems?.[0]) || {}
   if (parsed.tag === 've-mermaid') {
     parsed.raw = codeEl.textContent.split('\n').slice(1).join('\n')
-  } else if (codeElems.length > 1) parsed.args = parsed.args ? [...parsed.args, ...codeElems.slice(1)] : codeElems.slice(1)
+  } else if (parsed.tag === 've-media') {
+    console.log(parsed)
+    parsed.tag = 've-image' //TODO: implement ve-media conversion
+  } else if (codeElems.length > 1) {
+    parsed.args = parsed.args ? [...parsed.args, ...codeElems.slice(1)] : codeElems.slice(1)
+  }
   return parsed
 }
 

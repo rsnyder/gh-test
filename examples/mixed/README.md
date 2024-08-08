@@ -6,7 +6,7 @@ header "Juncture Examples" subtitle="The Amalfi Coast" background=wc:AmalfiCoast
 [Examples](/)
 ```
 
-# GH Testing (mixed syntax)
+# Juncture Testing (mixed syntax)
 
 `image wc:Sunflower_sky_backdrop.jpg class=right`
 
