@@ -256,11 +256,11 @@ function convertTags(rootEl) {
   .forEach(param => {
     let tag = Array.from(param.attributes).find(attr => attr.name.indexOf('ve-') === 0).name
     if (tag) {
-      let tagObj = tagMap[tag]
+      let tagObj = tagMap[tag] || {}
       let parsed = { tag }
       Array.from(param.attributes).forEach(attr => {
         if (attr.name !== tag) {
-          if (tagObj.booleans.has(attr.name)) {
+          if (tagObj.booleans?.has(attr.name)) {
             if (!parsed.booleans) parsed.booleans = []
             parsed.booleans.push(attr.name)
           } else {
