@@ -340,7 +340,12 @@ function restructure(rootEl) {
   let header = main.querySelector('ve-header')
   if (header) {
     article.appendChild(header)
-    header.parentElement.parentElement.parentElement.remove()
+    let headerParent = header.parentElement
+    while (headerParent?.tagName !== 'BODY') {
+      headerParent = headerParent.parentElement
+      console.log('headerParent', headerParent)
+    }
+    // headerParent.remove()
   }
 
   article.appendChild(main)
@@ -348,7 +353,12 @@ function restructure(rootEl) {
   let footer = main.querySelector('ve-footer')
   if (footer) {
     article.appendChild(footer)
-    footer.parentElement.parentElement.parentElement.remove()
+    let footerParent = footer.parentElement
+    while (footerParent?.tagName !== 'BODY') {
+      footerParent = footerParent.parentElement
+      console.log('footerParent', footerParent)
+    }
+    // footerParent.remove()
   }
 
   return article
@@ -366,14 +376,16 @@ function setMeta() {
   })
   if (!meta) meta = document.querySelector('param[ve-config]')
 
-  let firstHeading = document.querySelector('h1, h2, h3')?.innerText.trim()
+  let firstHeading = document.querySelector('h1, h2, h3')
+  let firstHeadingText = firstHeading?.innerText.trim()
   let firstParagraph = document.querySelector('p')?.innerText.trim()
 
-  console.log('firstHeading', firstHeading)
+  console.log('firstHeading', firstHeading, firstHeadingText)
   console.log('firstParagraph', firstParagraph)
 
   let jldEl = document.querySelector('script[type="application/ld+json"]')
   let seo = jldEl ? JSON.parse(jldEl.innerText) : {'@context':'https://schema.org', '@type':'WebSite', description:'', headline:'', name:'', url:''}
+  console.log('seo', seo)
   seo.url = location.href
 
   let title = meta?.getAttribute('title')
