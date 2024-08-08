@@ -348,7 +348,7 @@ function restructure(rootEl) {
 
   if (window.config.isJunctureV1) {
     article.classList.add('j1')
-    let veConfig = main.querySelector('param[ve-config]')
+    let veConfig = rootEl.querySelector('param[ve-config]')
     header = document.createElement('ve-header')
     header.className = 'sticky'
     Array.from(veConfig?.attributes || []).forEach(attr => {
@@ -356,7 +356,7 @@ function restructure(rootEl) {
       if (attr.name === 'title') header.setAttribute('title', attr.value)
       if (attr.name === 'subtitle' || attr.name === 'author') header.setAttribute('subtitle', attr.value)
     })
-    veConfig.remove()
+    // veConfig.remove()
   } else {
     header = main.querySelector('ve-header')
     if (header) {
