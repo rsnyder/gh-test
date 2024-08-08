@@ -267,15 +267,7 @@ function convertTags(rootEl) {
   })
   rootEl.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
-    if (parsed.tag === 've-header') {
-      header = makeEl(parsed)
-      codeEl.parentElement.parentElement.parentElement.remove()
-    } else if (parsed.tag === 've-footer') {
-      footer = makeEl(parsed)
-      codeEl.parentElement.parentElement.parentElement.remove()
-    } else if (parsed.tag) {
-      codeEl.replaceWith(makeEl(parsed))
-    }
+    if (parsed.tag) codeEl.replaceWith(makeEl(parsed))
   })
 }
 
@@ -363,9 +355,11 @@ function restructure(rootEl) {
 }
 
 function setMeta() {
+  console.log('setMeta')
   let meta
   let header
-  Array.from(document.getElementsByTagName('*')).forEach(el => {
+  Array.from(document.getElementsByTagName('*')).forEach(el => {  
+    console.log(el)
     if (!/^\w+-\w+/.test(el.tagName)) return
     if (el.tagName.split('-')[1] === 'META') meta = el
     else if (el.tagName.split('-')[1] === 'HEADER') header = el
@@ -463,6 +457,7 @@ function mount(mountPoint, html) {
 }
 
 docReady(function() {  
+  console.log('docReady')
   setConfig()
   console.log(window.config)
   mount()
