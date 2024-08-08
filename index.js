@@ -377,12 +377,14 @@ function restructure(rootEl) {
       currentSection.setAttribute('data-id', computeDataId(currentSection))
 
     } else  {
-      let segId = `${currentSection.getAttribute('data-id') || 0}.${currentSection.children.length}`
-      el.setAttribute('data-id', segId)
-      el.id = segId
-      el.classList.add('segment')
-      if (el !== sectionParam) {
-        currentSection.innerHTML += el.outerHTML
+      if (el.tagName !== 'PARAM') {
+        let segId = `${currentSection.getAttribute('data-id') || 0}.${currentSection.children.length}`
+        el.setAttribute('data-id', segId)
+        el.id = segId
+        el.classList.add('segment')
+        if (el !== sectionParam) {
+          currentSection.innerHTML += el.outerHTML
+        }
       }
     }
   })
@@ -474,16 +476,18 @@ function restructureForJ1(article) {
     
     const params = Array.from(viewersDiv.querySelectorAll(':scope > param'))
       .map((param, idx) => ({ ...Object.fromEntries(Array.from(param.attributes).map(a => [a.name, a.value])), ...{idx} }))
-    
+    console.log('params', id, params.map(p => Array.from(p.attributes).find(a => a.name.indexOf('ve-') === 0)?.name))
     let idx = params.length
     let parent = viewersDiv.parentElement
     while (parent && parent.tagName !== 'ARTICLE') {
+      console.log(parent.querySelectorAll(':scope > param'))
       Array.from(parent.querySelectorAll(':scope > param')).forEach(param => {
         params.push({...Object.fromEntries(Array.from(param.attributes).map(a => [a.name, a.value])), ...{idx} })
         idx++
       })
       parent = parent.parentElement
     }
+    console.log(params)
 
     const veTags = {}
     params.forEach(p => {
