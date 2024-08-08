@@ -434,7 +434,7 @@ function restructureForJ1(article) {
   function serializeProps(props) {
     return  Object.entries(props).map(([key, value]) => `${key}="${value}"`).join(' ').replace(/“/g, '&quot;').replace(/”/g, '&quot;')
   }
-  
+
   Array.from(article.querySelectorAll('[data-id]')).forEach(seg => {
     if (seg.tagName === 'SECTION') return
 
@@ -481,7 +481,6 @@ function restructureForJ1(article) {
     
     const params = Array.from(viewersDiv.querySelectorAll(':scope > param'))
       .map((param, idx) => ({ ...Object.fromEntries(Array.from(param.attributes).map(a => [a.name, a.value])), ...{idx} }))
-    console.log('params', id, params.map(p => Array.from(p.attributes).find(a => a.name.indexOf('ve-') === 0)?.name))
     let idx = params.length
     let parent = viewersDiv.parentElement
     while (parent && parent.tagName !== 'ARTICLE') {
