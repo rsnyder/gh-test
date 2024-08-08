@@ -441,7 +441,7 @@ function setMeta() {
     document.head.appendChild(robotsMeta)
   }
 
-  if (meta && meta.getAttribute('ve-config') === null) meta.remove()
+  // if (meta && meta.getAttribute('ve-config') === null) meta.remove()
   if (jldEl) jldEl.innerText = JSON.stringify(seo)
 
   return {meta: {title, description, robots, seo}}
