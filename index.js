@@ -2,8 +2,6 @@ import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import 'https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'
 import * as yaml from 'https://cdn.jsdelivr.net/npm/yaml@2.3.4/browser/index.min.js'
 
-console.log(window.config)
-
 function addLink(attrs) {
   let stylesheet = document.createElement('link')
   Object.entries(attrs).map(([key, value]) => stylesheet.setAttribute(key, value))
@@ -23,61 +21,59 @@ function docReady(fn) {
 
 const classes = new Set('left right full sticky'.split(' '))
 const components = {
-  juncture3: {
-    've-animated-image': {
-      booleans: 'autoplay',
-      positional: 'src caption'
-    },
-    've-audio': {
-      booleans: 'autoplay muted no-caption sync',
-      positional: 'src caption'
-    },
-    've-breadcrumbs': {},
-    've-compare': {
-      positional: 'src'
-    },
-    've-entities': {
-      booleans: 'cards'
-    },
-    've-gallery': {
-      booleans: 'caption'
-    },
-    've-header': {
-      booleans: 'breadcrumbs no-manifest-popover pdf-download-enabled',
-      positional: 'title background subtitle options position'
-    },
-    've-iframe': {
-      booleans: 'allow-full-screen allow-transparency full left right sticky',
-      positional: 'src'
-    },
-    've-image': {
-      booleans: 'no-caption static repo-is-writable zoom-on-scroll',
-      positional: 'src caption'
-    },
-    've-knightlab-timeline': {
-      booleans: 'has-bookmark'
-    },
-    've-map': {
-      booleans: 'cards full left marker prefer-geojson popup-on-hover zoom-on-scroll zoom-on-click',
-      positional: 'center caption'
-    },
-    've-menu': {
-      booleans: 'pdf-download-enabled'
-    },
-    've-mermaid': {},
-    've-meta': {},
-    've-plant-specimen': {
-      booleans: 'full left right sticky',
-      positional: 'qid max'
-    },
-    've-snippet': {},
-    've-video': {
-      booleans: 'autoplay muted no-caption sync',
-      positional: 'src caption'
-    },
-    've-visjs': {
-      booleans: 'hierarchical'
-    }
+  've-animated-image': {
+    booleans: 'autoplay',
+    positional: 'src caption'
+  },
+  've-audio': {
+    booleans: 'autoplay muted no-caption sync',
+    positional: 'src caption'
+  },
+  've-breadcrumbs': {},
+  've-compare': {
+    positional: 'src'
+  },
+  've-entities': {
+    booleans: 'cards'
+  },
+  've-gallery': {
+    booleans: 'caption'
+  },
+  've-header': {
+    booleans: 'breadcrumbs no-manifest-popover pdf-download-enabled',
+    positional: 'title background subtitle options position'
+  },
+  've-iframe': {
+    booleans: 'allow-full-screen allow-transparency full left right sticky',
+    positional: 'src'
+  },
+  've-image': {
+    booleans: 'no-caption static repo-is-writable zoom-on-scroll',
+    positional: 'src caption'
+  },
+  've-knightlab-timeline': {
+    booleans: 'has-bookmark'
+  },
+  've-map': {
+    booleans: 'cards full left marker prefer-geojson popup-on-hover zoom-on-scroll zoom-on-click',
+    positional: 'center caption'
+  },
+  've-menu': {
+    booleans: 'pdf-download-enabled'
+  },
+  've-mermaid': {},
+  've-meta': {},
+  've-plant-specimen': {
+    booleans: 'full left right sticky',
+    positional: 'qid max'
+  },
+  've-snippet': {},
+  've-video': {
+    booleans: 'autoplay muted no-caption sync',
+    positional: 'src caption'
+  },
+  've-visjs': {
+    booleans: 'hierarchical'
   }
 }
 let tagMap = {}
@@ -91,9 +87,9 @@ Object.values(components).forEach(langComponents => {
     tagMap[tag.slice(3)] = tagObj
   })
 })
+console.log(tagMap)
 
-function parseHeadline(s, codeLang) {
-  codeLang = codeLang || 'juncture3'
+function parseHeadline(s) {
   let tokens = []
   s = s.replace(/”/g,'"').replace(/”/g,'"').replace(/’/g,"'")
   s?.match(/[^\s"]+|"([^"]*)"/gmi)?.filter(t => t).forEach(token => {
@@ -136,7 +132,6 @@ function parseHeadline(s, codeLang) {
     else if (tokenIdx === 0 && !parsed.tag && tagMap[token.replace(/^\./,'')]) {
       let tag = token.replace(/^\./,'')
       parsed.tag = tag.indexOf('ve-') === 0 ? tag : `ve-${tag}`
-      parsed.lang = codeLang || components.juncture3[parsed.tag] ? 'juncture3' : 'juncture2'
     } else if (token === 'script' || token === 'link') parsed.tag = token
     else {
       if (parsed.tag === 'script' && !parsed.src) parsed.src = token
@@ -175,17 +170,16 @@ function parseHeadline(s, codeLang) {
   return parsed
 }
 
-function parseCodeEl(codeEl, codeLang) {
+function parseCodeEl(codeEl) {
   let codeElems = codeEl.textContent?.replace(/\s+\|\s+/g,'\n')
     .split('\n')
     .map(l => l.trim())
     // .map(l => l.replace(/<em>/g, '_').replace(/<\/em>/g, '_'))
     .filter(x => x) || []
-  let parsed = parseHeadline(codeElems?.[0], codeLang) || {}
+  let parsed = parseHeadline(codeElems?.[0]) || {}
   if (parsed.tag === 've-mermaid') {
     parsed.raw = codeEl.textContent.split('\n').slice(1).join('\n')
   } else if (codeElems.length > 1) parsed.args = parsed.args ? [...parsed.args, ...codeElems.slice(1)] : codeElems.slice(1)
-  parsed.lang = parsed.lang || codeLang || ((parsed.tag || parsed.class || parsed.style || parsed.id) ? 'juncture3' : 'plain')
   return parsed
 }
 
@@ -231,82 +225,9 @@ function computeDataId(el) {
   return dataId.reverse().join('.')
 }
 
-function restructure(rootEl) {
-  let styleSheet = rootEl.querySelector('style')
-  deleteAllComments(rootEl)
-
-  let restructured = document.createElement('main')
-  if (styleSheet) restructured.appendChild(styleSheet.cloneNode(true))
-  
-  restructured.className = 'page-content markdown-body'
-  restructured.setAttribute('aria-label', 'Content')
-  restructured.setAttribute('data-theme', 'light')
-  let currentSection = restructured;
-  let sectionParam
-  Array.from(rootEl?.children || []).forEach(el => {
-    if (el.tagName[0] === 'H' && isNumeric(el.tagName.slice(1))) {
-      let heading = el
-      let sectionLevel = parseInt(heading.tagName.slice(1))
-      if (currentSection) {
-        (Array.from(currentSection.children))
-          .filter(child => !/^H\d/.test(child.tagName))
-          .filter(child => !/PARAM/.test(child.tagName))
-          .filter(child => !/STYLE/.test(child.tagName))
-          .filter(child => !/^VE--/.test(child.tagName))
-          .forEach((child, idx) => { 
-            let segId = `${currentSection.getAttribute('data-id') || 0}.${idx+1}`
-            child.setAttribute('data-id', segId)
-            child.id = segId
-            child.classList.add('segment')
-          })
-      }
-
-      currentSection = document.createElement('section')
-      currentSection.classList.add(`section${sectionLevel}`)
-      Array.from(heading.classList).forEach(c => currentSection.classList.add(c))
-      heading.className = ''
-      if (heading.id) {
-        currentSection.id = heading.id
-        heading.removeAttribute('id')
-      }
-
-      currentSection.innerHTML += heading.outerHTML
-
-      let headings = []
-      for (let lvl = 1; lvl < sectionLevel; lvl++) {
-        headings = [...headings, ...Array.from(restructured.querySelectorAll(`H${lvl}`)).filter(h => h.parentElement.tagName === 'SECTION')]
-      }
-
-      let parent = (sectionLevel === 1 || headings.length === 0) 
-        ? restructured 
-        : headings.pop()?.parentElement
-      parent?.appendChild(currentSection)
-      currentSection.setAttribute('data-id', computeDataId(currentSection))
-
-    } else  {
-      let segId = `${currentSection.getAttribute('data-id') || 0}.${currentSection.children.length}`
-      el.setAttribute('data-id', segId)
-      el.id = segId
-      el.classList.add('segment')
-      if (el !== sectionParam) {
-        currentSection.innerHTML += el.outerHTML
-      }
-    }
-  })
-  return restructured
-}
-
-docReady(function() {  
-  let orig = document.querySelector('article')
-  let header
-  let footer
-  let main = document.createElement('main')
-  main.classList.add('page-content')
-  main.classList.add('markdown-body')
-  main.setAttribute('aria-label', 'Content')
-  main.innerHTML = window.config.content
-
-  // remove view as buttons
+// convert juncture tags to web component elements
+function convertTags(rootEl) {
+  // remove "view as" buttons
   Array.from(main.querySelectorAll('a > img'))
   .filter(img => img.src.indexOf('ve-button.png') > -1 || img.src.indexOf('wb.svg') > -1)
   .forEach(viewAsButton => viewAsButton?.parentElement?.parentElement?.remove())
@@ -358,14 +279,192 @@ docReady(function() {
       codeEl.replaceWith(makeEl(parsed))
     }
   })
-  
-  let article = document.createElement('article')
-  if (header) article.appendChild(header)
-  // article.appendChild(main)
-  article.appendChild(restructure(main))
-  if (footer) article.appendChild(footer)
+}
 
-  // console.log(article)
+// Restructure the content to have hierarchical sections and segments
+function restructure(rootEl) {
+  let styleSheet = rootEl.querySelector('style')
+  deleteAllComments(rootEl)
+
+  let main = document.createElement('main')
+  if (styleSheet) main.appendChild(styleSheet.cloneNode(true))
   
-  orig.replaceWith(article)
+  main.className = 'page-content markdown-body'
+  main.setAttribute('aria-label', 'Content')
+  main.setAttribute('data-theme', 'light')
+  let currentSection = main;
+  let sectionParam
+  Array.from(rootEl?.children || []).forEach(el => {
+    if (el.tagName[0] === 'H' && isNumeric(el.tagName.slice(1))) {
+      let heading = el
+      let sectionLevel = parseInt(heading.tagName.slice(1))
+      if (currentSection) {
+        (Array.from(currentSection.children))
+          .filter(child => !/^H\d/.test(child.tagName))
+          .filter(child => !/PARAM/.test(child.tagName))
+          .filter(child => !/STYLE/.test(child.tagName))
+          .filter(child => !/^VE--/.test(child.tagName))
+          .forEach((child, idx) => { 
+            let segId = `${currentSection.getAttribute('data-id') || 0}.${idx+1}`
+            child.setAttribute('data-id', segId)
+            child.id = segId
+            child.classList.add('segment')
+          })
+      }
+
+      currentSection = document.createElement('section')
+      currentSection.classList.add(`section${sectionLevel}`)
+      Array.from(heading.classList).forEach(c => currentSection.classList.add(c))
+      heading.className = ''
+      if (heading.id) {
+        currentSection.id = heading.id
+        heading.removeAttribute('id')
+      }
+
+      currentSection.innerHTML += heading.outerHTML
+
+      let headings = []
+      for (let lvl = 1; lvl < sectionLevel; lvl++) {
+        headings = [...headings, ...Array.from(main.querySelectorAll(`H${lvl}`)).filter(h => h.parentElement.tagName === 'SECTION')]
+      }
+
+      let parent = (sectionLevel === 1 || headings.length === 0) 
+        ? main 
+        : headings.pop()?.parentElement
+      parent?.appendChild(currentSection)
+      currentSection.setAttribute('data-id', computeDataId(currentSection))
+
+    } else  {
+      let segId = `${currentSection.getAttribute('data-id') || 0}.${currentSection.children.length}`
+      el.setAttribute('data-id', segId)
+      el.id = segId
+      el.classList.add('segment')
+      if (el !== sectionParam) {
+        currentSection.innerHTML += el.outerHTML
+      }
+    }
+  })
+
+  let article = document.createElement('article')
+
+  let header = main.querySelector('ve-header')
+  if (header) {
+    article.appendChild(header)
+    header.parentElement.parentElement.parentElement.remove()
+  }
+
+  article.appendChild(main)
+
+  let footer = main.querySelector('ve-footer')
+  if (footer) {
+    article.appendChild(footer)
+    footer.parentElement.parentElement.parentElement.remove()
+  }
+
+  return article
+}
+
+function setMeta() {
+  let meta
+  let header
+  Array.from(document.getElementsByTagName('*')).forEach(el => {
+    if (!/^\w+-\w+/.test(el.tagName)) return
+    if (el.tagName.split('-')[1] === 'META') meta = el
+    else if (el.tagName.split('-')[1] === 'HEADER') header = el
+  })
+  if (!meta) meta = document.querySelector('param[ve-config]')
+
+  let firstHeading = document.querySelector('h1, h2, h3')?.innerText.trim()
+  let firstParagraph = document.querySelector('p')?.innerText.trim()
+  
+  let jldEl = document.querySelector('script[type="application/ld+json"]')
+  let seo = jldEl ? JSON.parse(jldEl.innerText) : {'@context':'https://schema.org', '@type':'WebSite', description:'', headline:'', name:'', url:''}
+  seo.url = location.href
+
+  let title = meta?.getAttribute('title')
+    ? meta.getAttribute('title')
+    : window.config?.title
+      ? window.config.title
+      : header?.getAttribute('label')
+        ? header.getAttribute('label')
+        : firstHeading || ''
+
+  let description =  meta?.getAttribute('description')
+    ? meta.getAttribute('description')
+    : window.config?.description
+      ? window.config.description
+      : firstParagraph || ''
+
+  let robots = meta?.getAttribute('robots')
+    ? meta?.getAttribute('robots')
+    : window.config?.robots
+      ? window.config.robots
+      : '' 
+
+  if (title) {
+    document.title = title
+    seo.name = title
+    seo.headline = title
+    document.querySelector('meta[name="og:title"]')?.setAttribute('content', title)
+    document.querySelector('meta[property="og:site_name"]')?.setAttribute('content', title)
+    document.querySelector('meta[property="twitter:title"]')?.setAttribute('content', title)
+  }
+  if (description) {
+    document.querySelector('meta[name="description"]')?.setAttribute('content', description)
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', description)
+    seo.description = description
+  }
+  if (robots) {
+    let robotsMeta = document.createElement('meta')
+    robotsMeta.setAttribute('name', 'robots')
+    robotsMeta.setAttribute('content', robots)
+    document.head.appendChild(robotsMeta)
+  }
+
+  if (meta && meta.getAttribute('ve-config') === null) meta.remove()
+  if (jldEl) jldEl.innerText = JSON.stringify(seo)
+
+  return {meta: {title, description, robots, seo}}
+}
+
+// set the configuration
+function setConfig() {
+  window.config = {
+    ...yaml.parse(window.options || ''), 
+    ...(window.jekyll || {}), 
+    ...(window.config || {}),
+    ...{
+      baseurl: window.jekyll.site.baseurl,
+      source: {
+        owner: window.jekyll.site.github.owner_name,
+        repository: window.jekyll.site.github.repository_name,
+        branch: window.jekyll.site.github.source.branch,
+        dir: window.jekyll.page.dir,
+        path: window.jekyll.page.path,
+        name: window.jekyll.page.name
+      }
+    },
+    ...setMeta()
+  }
+}
+
+// mount the content
+function mount(mountPoint, html) {
+  mountPoint = mountPoint || document.querySelector('body > article, body > main, body > section')
+  html = html || window.config.content
+  
+  let contentEl = document.createElement('main')
+  contentEl.innerHTML = html
+ 
+  convertTags(contentEl)
+  let article = restructure(contentEl)
+  mountPoint.replaceWith(article)
+}
+
+docReady(function() {  
+  setConfig()
+  console.log(window.config)
+  mount()
 })
+
+export { mount }
