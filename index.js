@@ -349,7 +349,7 @@ function restructure(rootEl) {
 
   if (window.config.isJunctureV1) {
     article.classList.add('j1')
-    let veConfig = rootEl.querySelector('param[ve-config]')
+    let veConfig = main.querySelector('param[ve-config]')
     console.log(veConfig)
     header = document.createElement('ve-header')
     header.className = 'sticky'
