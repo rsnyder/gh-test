@@ -51,7 +51,7 @@ const components = {
     positional: 'src'
   },
   've-image': {
-    booleans: 'no-caption static repo-is-writable zoom-on-scroll',
+    booleans: 'no-caption grid static repo-is-writable zoom-on-scroll',
     positional: 'src caption'
   },
   've-knightlab-timeline': {

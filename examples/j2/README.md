@@ -1,6 +1,6 @@
 [![](https://v3.juncture-digital.org/images/wb.svg)](https://v3.juncture-digital.org)
 
-.ve-header "Juncture Examples" subtitle="The Amalfi Coast" wc:AmalfiCoast11.jpg sticky
+.ve-header "Juncture Examples" wc:AmalfiCoast11.jpg subtitle="The Amalfi Coast" sticky
 
 # The Amalfi Coast
 
