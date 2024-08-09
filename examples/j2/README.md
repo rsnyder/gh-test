@@ -1,6 +1,6 @@
 [![](https://v3.juncture-digital.org/images/wb.svg)](https://v3.juncture-digital.org)
 
-.ve-header "Juncture Examples" subtitle="The Amalfi Coast" wc:AmalfiCoast11.jpg .sticky
+.ve-header "Juncture Examples" subtitle="The Amalfi Coast" wc:AmalfiCoast11.jpg sticky
 
 # The Amalfi Coast
 
@@ -53,7 +53,7 @@ One of the main sites in Amalfi is the Amalfi Cathedral. [The cathedral](zoomto/
 
 [Positano](Q81345) (Campanian: Pasitano) is a village and comune on the Amalfi Coast (Province of Salerno), in Campania, Italy, mainly in an enclave in the hills leading down to the coast.[^2]
 
-.ve-media right
+.ve-media grid right
     - gh:rsnyder/gh-test/examples/j1/Positano.jpg
     - wc:Positano_Sunset.JPG
 
@@ -61,7 +61,7 @@ The climate of Positano is very mild, of the Mediterranean type; the winters are
 
 ## Ravello
 
-.ve-media right
+.ve-media grid right
     - gh:rsnyder/gh-test/examples/j1/Ravello__1.jpg
     - gh:rsnyder/gh-test/examples/j1/Ravello__2.jpg
     - gh:rsnyder/gh-test/examples/j1/Ravello__3.jpg

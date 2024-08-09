@@ -279,6 +279,7 @@ function convertTags(rootEl) {
   rootEl.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag) {
+      console.log(parsed)
       if (codeEl.parentElement.tagName === 'PRE') {
         codeEl = codeEl.parentElement
         codeEl.parentElement.removeAttribute('id')
@@ -327,6 +328,43 @@ function restructure(rootEl) {
       codeWrapper.appendChild(codeEl)
       heading.parentElement?.insertBefore(codeWrapper, heading.nextSibling)
     }
+  })
+
+  // For compatibility with Juncture V2
+  Array.from(rootEl?.querySelectorAll('p'))
+  .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
+  .forEach(p => {
+    let codeEl = document.createElement('code')
+    codeEl.setAttribute('class', 'language-juncture2')
+    let replacementText = p.innerHTML.trim().slice(1)
+      .replace(/\n\s*-\s+/g, '\n')
+      .replace(/<a href="/g, '')
+      .replace(/">[^<]*<\/a>/g, '')
+    codeEl.textContent = replacementText
+    p.textContent = ''
+    p.appendChild(codeEl)
+  })
+
+  Array.from(rootEl?.querySelectorAll('p, li'))
+  .filter(p => /==.+=={.+}/.test(p.textContent?.trim() || ''))
+  .forEach(el => {
+    let replHtml = []
+    let matches = Array.from(el.innerHTML.matchAll(/==(?<text>[^=]+)=={(?<attrs>[^}]+)}/g))
+    matches.forEach((match, idx) => {
+      if (idx === 0) replHtml.push(el.innerHTML.slice(0, match.index))
+      if (match.groups) {
+        let {text, attrs} = match.groups
+        if (/\s*Q\d+\s*/.test(attrs)) {
+          replHtml.push(`<a href="${attrs}">${text}</a>`)
+        } else if (attrs.indexOf('=') > 0) {
+          let [key, value] = attrs.split('=')
+          if (value[0] !== '"') attrs = `${key}="${value}"`
+          replHtml.push(`<mark ${attrs}>${text}</mark>`)
+        }
+        replHtml.push(el.innerHTML.slice(match.index + match[0].length, matches[idx+1]?.index || el.innerHTML.length))
+      }
+    })
+    el.innerHTML = replHtml.join('')
   })
 
   // For compatibility with Juncture V1
