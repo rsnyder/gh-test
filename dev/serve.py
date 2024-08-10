@@ -145,7 +145,7 @@ def html_from_markdown(md, baseurl, dir, name, path):
           break
       heading.replace_with(para)
   
-  CONFIG['content'] = str(soup)
+  CONFIG['content'] = str(soup.body.decode_contents())
   CONFIG['page'] = {
     'dir': dir,
     'name': name,
@@ -153,7 +153,7 @@ def html_from_markdown(md, baseurl, dir, name, path):
   }
   serialized_config = json.dumps(CONFIG)
   
-  html = html_template.replace('{{ content }}', soup.prettify())
+  html = html_template.replace('{{ content }}', CONFIG['content'])
   html = re.sub(r'<script>window\.jekyll=.*>', '', html)
   html += '<script>window.jekyll=' + serialized_config + '</script>'
   

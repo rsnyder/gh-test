@@ -906,6 +906,8 @@ function mount(mountPoint, html) {
  
   window.config.isJunctureV1 = isJunctureV1(contentEl)
   console.log(window.config)
+  console.log(new DOMParser().parseFromString(html, 'text/html').body
+)
 
   convertTags(contentEl)
   let article = restructure(contentEl)
