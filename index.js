@@ -335,7 +335,7 @@ function restructure(rootEl) {
   .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
   .forEach(p => {
     let codeEl = document.createElement('code')
-    codeEl.setAttribute('class', 'language-juncture2')
+    // codeEl.setAttribute('class', 'language-juncture2')
     let replacementText = p.innerHTML.trim().slice(1)
       .replace(/\n\s*-\s+/g, '\n')
       .replace(/<a href="/g, '')

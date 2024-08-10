@@ -43,7 +43,7 @@ Attracting international tourists of all classes annually, the Amalfi Coast was 
 
 [Amalfi](Q80563) is a town and _comune_ in the province of Salerno, in the region of Campania, Italy, on the Gulf of Salerno. It lies at the mouth of a deep ravine, at the foot of Monte Cerreto, surrounded by dramatic cliffs and coastal scenery. The town of Amalfi was the capital of the maritime republic known as the Duchy of Amalfi, an important trading power in the Mediterranean between 839 and around 1200.[^3]
 
-.ve-media gh:rsnyder/gh-test/examples/j1/Amalfi.jpg
+.ve-media gh:rsnyder/gh-test/examples/j1/Amalfi.jpg right
 
 Amalfi is the main town of the coast on which it is located, named _Costiera Amalfitana_ (Amalfi Coast), and is today an important tourist destination together with other towns on the same coast, such as Positano, Ravello and others.
 
@@ -53,7 +53,7 @@ One of the main sites in Amalfi is the Amalfi Cathedral. [The cathedral](zoomto/
 
 [Positano](Q81345) (Campanian: Pasitano) is a village and comune on the Amalfi Coast (Province of Salerno), in Campania, Italy, mainly in an enclave in the hills leading down to the coast.[^2]
 
-.ve-media grid right
+.ve-media right
     - gh:rsnyder/gh-test/examples/j1/Positano.jpg
     - wc:Positano_Sunset.JPG
 
@@ -61,7 +61,7 @@ The climate of Positano is very mild, of the Mediterranean type; the winters are
 
 ## Ravello
 
-.ve-media grid right
+.ve-media right
     - gh:rsnyder/gh-test/examples/j1/Ravello__1.jpg
     - gh:rsnyder/gh-test/examples/j1/Ravello__2.jpg
     - gh:rsnyder/gh-test/examples/j1/Ravello__3.jpg
