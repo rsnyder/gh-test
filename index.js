@@ -2,7 +2,7 @@ import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import 'https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'
 import * as yaml from 'https://cdn.jsdelivr.net/npm/yaml@2.3.4/browser/index.min.js'
 
-const mode = location.hostname === 'localhost' || location.pathname === '/editor' ? 'dev' : 'prod'
+const mode = location.hostname === 'localhost' || location.pathname === '/wb' ? 'dev' : 'prod'
 const isMobile = ('ontouchstart' in document.documentElement && /mobi/i.test(navigator.userAgent) )
 
 function addLink(attrs) {
@@ -214,7 +214,7 @@ function makeEl(parsed) {
 }
     
 addLink({rel: 'stylesheet', type: 'text/css', href: 'https://cdn.jsdelivr.net/npm/juncture-digital/css/index.css'})
-addScript({src: 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js', type: 'module'})
+addScript({src: mode === 'prod' ? 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js' : 'http://localhost:5173/main.ts', type: 'module'})
 
 function deleteAllComments(rootEl) {
   var iterator = document.createNodeIterator(rootEl, NodeFilter.SHOW_COMMENT, () => { return NodeFilter.FILTER_ACCEPT}, false);
@@ -240,18 +240,21 @@ function convertTags(rootEl) {
   .filter(img => img.src.indexOf('ve-button.png') > -1 || img.src.indexOf('wb.svg') > -1)
   .forEach(viewAsButton => viewAsButton?.parentElement?.parentElement?.remove())
 
+  console.log('juncture v2')
   Array.from(rootEl.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
     .forEach(p => {
+      let codeElWrapper = document.createElement('div')
       let codeEl = document.createElement('code')
+      codeElWrapper.appendChild(codeEl)
       codeEl.setAttribute('class', 'language-juncture2')
       let replacementText = p.innerHTML.trim().slice(1)
         .replace(/\n\s*-\s+/g, '\n')
         .replace(/<a href="/g, '')
         .replace(/">[^<]*<\/a>/g, '')
+        .replace(/^ve-media/, 've-image')
       codeEl.textContent = replacementText
-      p.textContent = ''
-      p.appendChild(codeEl)
+      p.replaceWith(codeElWrapper)
     })
   Array.from(rootEl.querySelectorAll('param'))
   .filter(param => Array.from(param.attributes).filter(attr => attr.name.indexOf('ve-') === 0).length)
@@ -273,19 +276,21 @@ function convertTags(rootEl) {
           }
         }
       })
-      if (!window.config.isJunctureV1) param.replaceWith(makeEl(parsed))
+      if (!isJunctureV1(rootEl)) param.replaceWith(makeEl(parsed))
     }
   })
   rootEl.querySelectorAll('code').forEach(codeEl => {
     let parsed = parseCodeEl(codeEl)
     if (parsed.tag) {
-      console.log(parsed)
       if (codeEl.parentElement.tagName === 'PRE') {
         codeEl = codeEl.parentElement
         codeEl.parentElement.removeAttribute('id')
         codeEl.parentElement.removeAttribute('data-id')
         codeEl.parentElement.removeAttribute('class')
         codeEl.parentElement.parentElement.className = 'segment'
+        if (codeEl.parentElement.tagName === 'DIV' && codeEl.parentElement.children.length === 1) {
+          codeEl.parentElement.replaceWith(codeEl)
+        }
       }
       codeEl.replaceWith(makeEl(parsed))
     }
@@ -328,21 +333,6 @@ function restructure(rootEl) {
       codeWrapper.appendChild(codeEl)
       heading.parentElement?.insertBefore(codeWrapper, heading.nextSibling)
     }
-  })
-
-  // For compatibility with Juncture V2
-  Array.from(rootEl?.querySelectorAll('p'))
-  .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
-  .forEach(p => {
-    let codeEl = document.createElement('code')
-    // codeEl.setAttribute('class', 'language-juncture2')
-    let replacementText = p.innerHTML.trim().slice(1)
-      .replace(/\n\s*-\s+/g, '\n')
-      .replace(/<a href="/g, '')
-      .replace(/">[^<]*<\/a>/g, '')
-    codeEl.textContent = replacementText
-    p.textContent = ''
-    p.appendChild(codeEl)
   })
 
   Array.from(rootEl?.querySelectorAll('p, li'))
@@ -465,7 +455,7 @@ function restructure(rootEl) {
   let header, footer
   let article = document.createElement('article')
 
-  if (window.config.isJunctureV1) {
+  if (isJunctureV1(rootEl)) {
     article.classList.add('j1')
     let veConfig = main.querySelector('param[ve-config]')
     header = document.createElement('ve-header')
@@ -501,7 +491,6 @@ function restructure(rootEl) {
 }
 
 function restructureForJ1(article) {
-  // console.log(article.cloneNode(true))
 
   function serializeProps(props) {
     return  Object.entries(props).map(([key, value]) => `${key}="${value}"`).join(' ').replace(/“/g, '&quot;').replace(/”/g, '&quot;')
@@ -856,14 +845,14 @@ function setConfig() {
     ...(window.jekyll || {}), 
     ...(window.config || {}),
     ...{
-      baseurl: window.jekyll.site.baseurl,
+      baseurl: window.jekyll?.site.baseurl,
       source: {
-        owner: window.jekyll.site.github.owner_name,
-        repository: window.jekyll.site.github.repository_name,
-        branch: window.jekyll.site.github.source.branch,
-        dir: window.jekyll.page.dir,
-        path: window.jekyll.page.path,
-        name: window.jekyll.page.name
+        owner: window.jekyll?.site.github.owner_name,
+        repository: window.jekyll?.site.github.repository_name,
+        branch: window.jekyll?.site.github.source.branch,
+        dir: window.jekyll?.page.dir,
+        path: window.jekyll?.page.path,
+        name: window.jekyll?.page.name
       }
     },
     ...setMeta()
@@ -896,22 +885,67 @@ function setViewersPosition() {
   }
 }
 
+function elFromHtml(html) {
+  return new DOMParser().parseFromString(html, 'text/html').querySelector('body')
+}
+
+async function getGhFile(acct, repo, branch, path) {
+  // console.log(`getFile: acct=${acct} repo=${repo} branch=${branch} path=${path}`)
+  let url = `https://api.github.com/repos/${acct}/${repo}/contents/${path}?ref=${branch}`
+  let resp = await fetch(url, {cache: 'no-cache'})
+  if (resp.ok) {
+    let payload = await resp.json()
+    let content = decodeURIComponent(escape(atob(payload.content)))
+    return {status: resp.status, content}
+  } else if (resp.status === 403 || resp.status === 401) { // access problem, possibly api rate limit exceeded
+    url = `https://raw.githubusercontent.com/${acct}/${repo}/${branch}/${path}`
+    resp = await fetch(url)
+    if (resp.ok) {
+      let content = await resp.text()
+      return {status: resp.status, content}
+    } else {
+      return {status: resp.status, content: null}
+    }
+  } else {
+    return {status: resp.status, content: null}
+  }
+}
+
+function markdownToHtml(markdown) {
+  return marked.use(window.markedFootnote()).parse(markdown)
+}
+
+function structureContent(html) {
+  let contentEl = document.createElement('main')
+  contentEl.innerHTML = html
+  convertTags(contentEl)
+
+  let article = restructure(contentEl)
+  if (isJunctureV1(contentEl)) article = restructureForJ1(article)
+  return article
+}
+
 // mount the content
 function mount(mountPoint, html) {
-  mountPoint = mountPoint || document.querySelector('body > article, body > main, body > section')
-  html = html || window.config.content
+  html = html || window.config.content || document.body.innerHTML
+  mountPoint = mountPoint || document.querySelector('body > article, body > main, body > section') 
+  if (!mountPoint) {
+    mountPoint = document.createElement('article')
+    document.body.innerHTML = mountPoint.outerHTML
+  }
   
   let contentEl = document.createElement('main')
   contentEl.innerHTML = html
  
   window.config.isJunctureV1 = isJunctureV1(contentEl)
   console.log(window.config)
-  console.log(new DOMParser().parseFromString(html, 'text/html').body
-)
 
   convertTags(contentEl)
+
   let article = restructure(contentEl)
   if (window.config.isJunctureV1) article = restructureForJ1(article)
+
+  console.log(article)
 
   mountPoint.replaceWith(article)
 
@@ -930,4 +964,4 @@ docReady(function() {
   mount()
 })
 
-export { mount }
+export { getGhFile, markdownToHtml, mount, structureContent }

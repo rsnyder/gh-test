@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Juncture Workbench</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css" />
+    <link href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <style>
+      body { font-family: Roboto, sans-serif; max-width:1200px; margin: auto; padding: 0 20px; }
+      textarea { opacity: 0; }
+      .EasyMDEContainer .CodeMirror-wrap { height: calc(100dvh - 234px); }
+      .EasyMDEContainer .CodeMirror-code { font-size: 1.2em; }
+      .editor-preview { padding:0; }
+      article.j1 { height: unset; }
+      @media (min-width: 800px) { .j1 .viewers { height: calc(100dvh - 192px); } }
+      .CodeMirror-line .cm-header { font-size: 1.4em; }
+      button.disabled { display:none; }
+      .editor-toolbar button { min-width: 40px; }
+      .editor-toolbar button i { font-size: large; }
+      .editor-toolbar.disabled-for-preview button:not(.no-disable) { opacity: 0.3; }
+      .editor-toolbar button.preview i { font-size: x-large; }
+      .editor-toolbar button.preview.active { border: 2px solid #aaa; border-radius: 6px; background-color: #f0f0f0; }
+      ve-header ul { display: none; }
+      /* span.cm-formatting-code, span.cm-formatting-code + span.cm-comment { color: red; background-color: inherit !important;} */
+    </style>
+  </head>
+  <body>
+
+    <ve-header 
+      title="Juncture: <span style='font-size:80%;'>Workbench</span>"
+      auth="github" 
+      logo="/images/logo.svg" icon-filter="white"
+      background="wc:Box_of_type.jpg" position="center" no-manifest-popover
+      height="100" 
+      >
+      <ul>
+        <li><a href="/">Juncture Home</a></li>
+        <li><a href="https://search.juncture-digital.org">Search Tool</a></li>
+        <li><a href="https://docs.juncture-digital.org">Help</a></li>
+      </ul>
+    </ve-header>
+    <ve-gh-file-selector id="gh-selector" gh-source=""></ve-gh-file-selector>
+    <textarea id="md-text"></textarea>
+    
+    <sl-dialog label="Warning" class="unsaved-changes-dialog" style="display:none;">
+      You have unsaved changes. Select <b>Cancel</b> to continue editing or <b>Proceed</b> to load the selected file and lose your changes.
+      <div slot="footer">
+        <sl-button variant="primary" class="cancel">Cancel</sl-button>
+        <sl-button variant="primary" class="proceed">Proceed</sl-button>
+      </div>
+    </sl-dialog>
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js" type="module"></script> -->
+    <script type="module">
+      import { getGhFile, markdownToHtml, structureContent } from './index.js'
+
+      const searchParams = new URL(location.href).searchParams
+      const sourceArg = searchParams.get('source')
+      const referrer = document.referrer && new URL(document.referrer)
+      let mode = searchParams.get('mode') || 'edit'
+      let markdownIsUpdated = false
+      
+      let authToken = window.localStorage.getItem('gh-auth-token') || window.localStorage.getItem('gh-unscoped-token')
+
+      let easyMDE
+
+      if (!sourceArg && referrer) {
+        // redirect to editor with source query if referrer is a markdown file
+        let [acct, repo, branch, ...path] = referrer.pathname.split('/').filter(pe => pe && pe !== 'blob' && pe !== 'tree')
+        if (acct && repo) {
+          if (branch) {
+            window.location.href = `${window.location.origin}/wb?source=${`${acct}/${repo}/${branch}/${path.join('/')}`}`
+          } else {
+            getDefaultBranch(acct, repo).then(branch => {
+              window.location.href = `${window.location.origin}/wb?source=${`${acct}/${repo}/${branch}/${path.join('/')}`}`
+            })
+          }
+        }
+      } 
+
+      let ghSource
+      if (sourceArg) {
+        let [acct, repo, branch, ...path] = sourceArg.split('/').filter(pe => pe)
+        ghSource = `${acct}/${repo}/${branch}/${path.join('/')}`
+        // if (ghSource !== localStorage.getItem('smde_ghsource')) localStorage.setItem('smde_juncture_content', '')
+        document.getElementById('gh-selector').setAttribute('gh-source', ghSource)
+      } else {
+        ghSource = localStorage.getItem('smde_ghsource')
+        if (ghSource) {
+          window.history.replaceState({}, null, `/wb?source=${ghSource}`)
+          document.getElementById('gh-selector').setAttribute('gh-source', ghSource)
+        }
+      }
+
+      let repoIsWritable = false
+      let dialog = document.querySelector('.unsaved-changes-dialog')
+      dialog.style.display = 'block'
+      const cancelButton = dialog.querySelector('.cancel')
+      cancelButton.addEventListener('click', () => cancelFileLoad())
+      const proceedButton = dialog.querySelector('.proceed')
+      proceedButton.addEventListener('click', () => loadMarkdown())
+
+      function cancelFileLoad() {
+        dialog.hide()
+        document.getElementById('gh-selector').setAttribute('gh-source', localStorage.getItem('smde_ghsource'))
+      }
+
+      function loadMarkdown() {
+        dialog.hide()
+        window.history.replaceState({}, null, `/wb?source=${ghSource}`)
+
+        let [acct, repo, branch, ...path] = ghSource.split('/').filter(pe => pe)
+        getGhFile(acct, repo, branch, path.join('/')).then(resp => {
+          if (resp.status === 200) {
+            localStorage.setItem('smde_ghsource', ghSource)
+            localStorage.setItem('smde_juncture_saved_hash', resp.content.trim().hashCode())
+            easyMDE.value(resp.content)
+            // styleJunctureElements()
+          }
+        })
+
+      }
+
+      async function getDefaultBranch(acct, repo) {
+        let defaultBranch = null
+        let url = `https://api.github.com/repos/${acct}/${repo}`
+        let resp = authToken
+          ? await fetch(url, { headers: {Authorization: `Token ${authToken}`} })
+          : await fetch(url)
+        if (resp.ok) {
+          resp = await resp.json()
+          defaultBranch = resp.default_branch
+        }
+        return defaultBranch
+      }
+
+      init()
+
+      function init() {
+
+        document.body.addEventListener('drop', drop)
+        document.body.addEventListener('paste', paste)
+
+        let ghSelector = document.getElementById('gh-selector')
+        
+        ghSelector.addEventListener('file-selected', e => {
+          let evt = e.detail[0]
+          // console.log(evt)
+          document.getElementById('gh-selector').setAttribute('gh-source', '')
+          ghSource = evt.path
+          if (ghSource === localStorage.getItem('smde_ghsource')) {
+            let markdown = localStorage.getItem('smde_juncture_content')
+            easyMDE.value(markdown)
+            // styleJunctureElements()
+          } else {
+            if (markdownIsUpdated && evt.trigger !== 'delete') dialog.show()
+            else loadMarkdown()
+          }
+        })
+
+        ghSelector.addEventListener('repo-is-writable', e => {
+          repoIsWritable = e.detail[0]
+          setSaveButtonState()
+        })
+
+        easyMDE = new EasyMDE({
+          element: document.getElementById('md-text'),
+          previewRender: togglePreview,
+          autosave: {
+            enabled: true,
+            uniqueId: 'juncture_content'
+          },
+          spellChecker: false,
+          toolbar: [
+            ...[
+              ...['undo', 'redo', '|','bold', 'italic', 'heading', 'quote'],
+              ...['unordered-list', 'ordered-list', 'link']
+            ], 
+            ...[           
+            '|', 
+            {
+              class: 'save',
+                action: () => {saveFile()},
+                className: 'fa fa-download',
+                title: 'Save file',
+                attributes: {id: 'save'}
+              }, {
+              class: 'copy',
+                action: () => {copyText()},
+                className: 'fa fa-copy',
+                title: 'Copy text',
+                attributes: {id: 'copy'}
+              }, { 
+                class: 'Open',
+                action: () => {open()},
+                className: 'fa fa-share',
+                title: 'Open in new tab',
+                attributes: {id: 'open'}
+              },
+              '|', 
+              'preview'
+            ]
+          ]
+        })
+        easyMDE.codemirror.on('change', watchContent)
+        easyMDE.codemirror.on('paste', (_, evt) => evt.preventDefault())
+        easyMDE.codemirror.on('drop', (_, evt) => evt.preventDefault())
+
+        setSaveButtonState()
+        if (mode === 'view') easyMDE.togglePreview()
+      }
+
+      function saveFile() {
+        let [acct, repo, branch, ...path] = ghSource.split('/')
+        putFile(acct, repo, branch, path.join('/'), easyMDE.value()).then(resp => {
+          if (resp.status === 200) {
+            markdownIsUpdated = false
+            let markdown = easyMDE.value()
+            localStorage.setItem('smde_juncture_saved_hash', markdown.trim().hashCode())
+            setSaveButtonState()
+          }
+        })
+      }
+
+      function copyText() {
+        if (navigator.clipboard) navigator.clipboard.writeText(easyMDE.value())
+      }
+
+      function open() {
+        // window.open(`${location.origin}?source=${ghSource.replace(/\/\w+\.md$/,'')}/`, '_blank')
+        let [acct, repo, branch, ...path] = ghSource.split('/').filter(pe => pe)
+        path = path.join('/').replace(/\/?README\.md$/, '').replace(/\.md$/, '')
+        let href = `https://${acct}.github.io/${repo}/${path}`
+        console.log('Opening:', href)
+        window.open(href, '_blank') 
+      }
+
+      function togglePreview(md, preview) {
+        setTimeout(() => {
+          mode = preview.classList.contains('editor-preview-active') ? 'view' : 'edit'
+          window.history.replaceState({}, null, `/wb?source=${ghSource}&mode=${mode}`)
+          setSaveButtonState()
+          // styleJunctureElements()
+        }, 100)
+        let resp = mdToHtml(md)
+        return `<ve-article${repoIsWritable ? ' repo-is-writable' : ''} base="${ghSource.replace(/\/\w+\.md$/, '')}" class=${resp.classes}>${resp.html.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</ve-article>`
+      }
+
+      function mdToHtml(md) {
+        let rawHTML = markdownToHtml(md)
+        let el = structureContent(rawHTML);
+        (Array.from(el?.querySelectorAll('article > main > p') || []).forEach(p => {
+          p.removeAttribute('data-id')
+          p.removeAttribute('id')
+          p.removeAttribute('class')
+        }))
+        console.log(el)
+        let html = el.innerHTML
+        let classes = el.className  
+        return {html, classes}
+      }
+
+      function setSaveButtonState() {
+        if (mode === 'edit') {
+          if (repoIsWritable && markdownIsUpdated) document.getElementById('save').removeAttribute('disabled')
+          else document.getElementById('save').setAttribute('disabled', '')
+        }
+      }
+
+      function styleJunctureElements() {
+        setTimeout(() =>
+          //document.querySelector('.EasyMDEContainer').querySelectorAll('span.cm-formatting-code + span.cm-comment').forEach((el, i) => {
+          //  el.style.color = 'red'
+          //}
+          Array.from(document.querySelector('.EasyMDEContainer').querySelectorAll('.CodeMirror-line .cm-url'))
+          .filter(el => el.className === 'cm-string cm-url')
+          .filter(el => el.innerText.split('/')[0] === 'flyto')
+          .forEach((el, i) => {
+            el.style.color = 'red'
+          }
+        ), 100)
+      }
+
+      String.prototype.hashCode = function() {
+        var hash = 0, i, chr
+        if (this.length === 0) return hash
+        for (i = 0; i < this.length; i++) {
+          chr = this.charCodeAt(i)
+          hash = ((hash << 5) - hash) + chr
+          hash |= 0; // Convert to 32bit integer
+        }
+        return hash
+      }
+
+      function contentIsUpdated() {
+        let savedHash = localStorage.getItem('smde_juncture_saved_hash')
+        let currentHash = `${easyMDE.value().trim().hashCode()}`
+        return savedHash !== currentHash
+      }
+
+      let debounce = null
+      function watchContent(evt) {
+        if (debounce !== null) {
+          clearTimeout(debounce)
+          debounce = null
+        }
+        debounce = window.setTimeout(() => {
+          markdownIsUpdated = contentIsUpdated()
+          setSaveButtonState()
+          // styleJunctureElements()
+        }, 100)
+      }
+    
+      // Encoding UTF8 ⇢ base64
+      function b64EncodeUnicode(str) {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(_, p1) {
+            return String.fromCharCode(parseInt(p1, 16))
+        }))
+      }
+
+      // Decoding base64 ⇢ UTF8
+      function b64DecodeUnicode(str) {
+        return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        }).join(''))
+      }
+
+      async function getSha(acct, repo, branch, path) {
+        let url = `https://api.github.com/repos/${acct}/${repo}/contents/${path}?ref=${branch}`
+        let resp = await fetch(url, { headers: {Authorization: `Token ${authToken}`} })
+        if (resp.ok) resp = await resp.json()
+        let sha = resp.sha
+        return sha
+      }
+  
+      const _shas = {}
+      async function putFile(acct, repo, branch, path, content, isBinaryString, sha) {
+        let url = `https://api.github.com/repos/${acct}/${repo}/contents/${path}`
+        let shaKey = `${acct}/${repo}/${branch}/${path}`
+        sha = sha || _shas[shaKey] || await getSha(acct, repo, branch, path)
+        let payload = { 
+          message: 'API commit', 
+          content: isBinaryString ? btoa(content) : b64EncodeUnicode(content) 
+        }
+        payload.branch = branch
+        if (sha) payload.sha = sha
+        let resp = await fetch(url, { method: 'PUT', body: JSON.stringify(payload), headers: {Authorization: `Token ${authToken}`} })
+        if (resp.ok) {
+          let body = await resp.json()
+          sha = body.content.sha
+          _shas[shaKey] = sha
+        } else {
+          console.log(resp)
+        }
+        return {status:resp.status, statusText:resp.statusText, sha}
+      }
+
+      function insertText(text) {
+        let md = easyMDE.value()
+        let isJunctureV1Essay = md.indexOf('<param') > -1 && md.indexOf('ve-config') > -1
+        let toInsert = text
+        if (text.indexOf('https://www.youtube.com') === 0) {
+          let vid = new URL(text).searchParams.get('v')
+          toInsert = isJunctureV1Essay ? `<param ve-video vid="${vid}">\n` : `\n\`video ${vid}\`\n`
+        } else if (/^[\d\., \-+]+$/.test(text)) { //map coords
+          let args = text.split(',').map(e => e.trim())
+          let coords = args.slice(0,2).join(',')
+          let zoom = args[2] || 10
+          toInsert = isJunctureV1Essay ? `<param ve-map center="${coords}" zoom="${zoom}">\n` : `\n\`map ${coords},${zoom}\`\n`
+        } else if (text.indexOf('https://commons.wikimedia.org/wiki') === 0 ||
+                   text.indexOf('https://upload.wikimedia.org/wikipedia/commons') === 0 ||
+                   /^https:\/\/.+\.wikipedia\.org\/wiki/.test(text)
+                  ){ //wikimedia
+          let title = decodeURIComponent(text.split('/').pop().replace(/File:/,'').replace(/^\d+px-/,'') )
+          let extension = title.split('.').pop()
+          if (extension === 'webm') // video
+            toInsert = isJunctureV1Essay ? `<param ve-video src="wc:${title}">\n` : `\n\`video src=wc:${title}\`\n`
+          else if (extension === 'oga') // audio
+            toInsert = isJunctureV1Essay ? `<param ve-audio src="wc:${title}">\n` : `\n\`audio src=wc:${title}\`\n`
+          else // image
+            toInsert = isJunctureV1Essay ? `<param ve-image manifest="wc:${title}">\n` : `\n\`image wc:${title}\`\n`
+        } else if (/^https:\/\/github\.com/.test(text)) { //Github
+          let isDirUrl = text.indexOf('/tree/') > -1
+          let [acct, repo, branch, ...path] = text.split('/').slice(3).filter(pe => pe).filter(pe => pe !== 'blob' && pe !== 'tree')
+          toInsert = isJunctureV1Essay
+            ? `<param ve-image manifest="gh:${acct}/${repo}/${path.join('/')}">\n` 
+            : text.indexOf('/tree/') > -1 // folder URL
+              ? `\n\`gallery gh-dir=${acct}/${repo}/${path.join('/')}\`\n`
+              : `\n\`image gh:${acct}/${repo}/${path.join('/')}\`\n`
+        } else if (text.indexOf('iiif.mdpress.io') > -1 || text.indexOf('iiif.juncture-digital.org') > -1) { //manifest
+          let shortFormUrl = text.replace(/https:\/\/iiif\.mdpress\.io\//, '').replace(/https:\/\/iiif\.juncture-digital\.org\//, '').replace(/\/manifest\.json/, '')
+          toInsert = isJunctureV1Essay ? `<param ve-image manifest="${shortFormUrl}">\n` : `\n\`image ${shortFormUrl}\`\n`
+        }
+        easyMDE.codemirror.replaceSelection(toInsert)
+      }
+
+      function drop(e) {
+        easyMDE.codemirror.setSelection(easyMDE.codemirror.coordsChar({left:e.pageX, top:e.pageY}))
+        let inputText = ''
+        if (e.dataTransfer) inputText = e.dataTransfer.getData('Text') || e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text/uri-list')
+        if (inputText) insertText(inputText)
+      }
+
+      function paste(e) {
+        let inputText = e.clipboardData?.getData('Text') || ''
+        inputText = inputText.replace(/\[\d+\]/g,'')
+        if (inputText && easyMDE.codemirror.getCursor().ch === 0) insertText(inputText)
+        else easyMDE.codemirror.replaceSelection(inputText)
+      }
+
+      function cleanText(text) {
+        return text.replace(/\[\d+\]/g,'')
+      }
+
+    </script>
+  </body>
+</html>
