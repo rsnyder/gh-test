@@ -964,8 +964,10 @@ function mount(mountPoint, html) {
 }
 
 document.querySelectorAll('script').forEach(script => {
-  if (script.src === 'http://localhost:8080/index.js' || script.src === 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js')
+  console.log(script.src)
+  if (script.src === 'http://localhost:8080/index.js' || script.src === 'https://cdn.jsdelivr.net/npm/juncture-digital/js/ghp.js' || script.src === 'https://rsnyder.github.io/gh-test/index.js')
     docReady(function() {
+      console.log('docReady')
       setConfig()
       mount()
     })
