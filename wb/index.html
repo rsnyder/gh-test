@@ -81,16 +81,19 @@
         }
       } 
 
-      let ghSource
+      let ghSource, browserUrl
+
       if (sourceArg) {
         let [acct, repo, branch, ...path] = sourceArg.split('/').filter(pe => pe)
         ghSource = `${acct}/${repo}/${branch}/${path.join('/')}`
+        browserUrl = location.hostname.indexOf('github.io') > 0 ? `/${location.pathname.split('/')[1]}/wb?source=${ghSource}` : `/wb?source=${ghSource}`
         // if (ghSource !== localStorage.getItem('smde_ghsource')) localStorage.setItem('smde_juncture_content', '')
         document.getElementById('gh-selector').setAttribute('gh-source', ghSource)
       } else {
         ghSource = localStorage.getItem('smde_ghsource')
         if (ghSource) {
-          window.history.replaceState({}, null, `/wb?source=${ghSource}`)
+          browserUrl = location.hostname.indexOf('github.io') > 0 ? `/${location.pathname.split('/')[1]}/wb?source=${ghSource}` : `/wb?source=${ghSource}`
+          window.history.replaceState({}, null, browserUrl)
           document.getElementById('gh-selector').setAttribute('gh-source', ghSource)
         }
       }
@@ -110,7 +113,7 @@
 
       function loadMarkdown() {
         dialog.hide()
-        window.history.replaceState({}, null, `/wb?source=${ghSource}`)
+        window.history.replaceState({}, null, browserUrl)
 
         let [acct, repo, branch, ...path] = ghSource.split('/').filter(pe => pe)
         getGhFile(acct, repo, branch, path.join('/')).then(resp => {
@@ -159,6 +162,7 @@
             if (markdownIsUpdated && evt.trigger !== 'delete') dialog.show()
             else loadMarkdown()
           }
+          browserUrl = location.hostname.indexOf('github.io') > 0 ? `/${location.pathname.split('/')[1]}/wb?source=${ghSource}` : `/wb?source=${ghSource}`
         })
 
         ghSelector.addEventListener('repo-is-writable', e => {
@@ -241,7 +245,7 @@
       function togglePreview(md, preview) {
         setTimeout(() => {
           mode = preview.classList.contains('editor-preview-active') ? 'view' : 'edit'
-          window.history.replaceState({}, null, `/wb?source=${ghSource}&mode=${mode}`)
+          window.history.replaceState({}, null, `${browserUrl}&mode=${mode}`)
           setSaveButtonState()
           // styleJunctureElements()
         }, 100)
