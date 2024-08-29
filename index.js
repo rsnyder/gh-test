@@ -9,6 +9,7 @@ function addLink(attrs) {
   let stylesheet = document.createElement('link')
   Object.entries(attrs).map(([key, value]) => stylesheet.setAttribute(key, value))
   document.head.appendChild(stylesheet)
+
 }
 
 function addScript(attrs) {
@@ -48,7 +49,7 @@ const components = {
   },
   've-iframe': {
     booleans: 'allow-full-screen allow-transparency full left right sticky',
-    positional: 'src'
+    positional: 'src caption'
   },
   've-image': {
     booleans: 'no-caption grid static repo-is-writable zoom-on-scroll',
@@ -223,6 +224,8 @@ function deleteAllComments(rootEl) {
 }
 
 function isNumeric(arg) { return !isNaN(arg) }
+function camelToKebab(input) { return input.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}
+
 function computeDataId(el) {
   let dataId = []
   while (el.parentElement) {
@@ -240,7 +243,6 @@ function convertTags(rootEl) {
   .filter(img => img.src.indexOf('ve-button.png') > -1 || img.src.indexOf('wb.svg') > -1)
   .forEach(viewAsButton => viewAsButton?.parentElement?.parentElement?.remove())
 
-  console.log('juncture v2')
   Array.from(rootEl.querySelectorAll('p'))
     .filter(p => /^\.ve-\w+\S/.test(p.childNodes.item(0)?.nodeValue?.trim() || ''))
     .forEach(p => {
@@ -601,10 +603,10 @@ function restructureForJ1(article) {
         setElProps(viewerEl, tagProps[0], {caption:''})
         viewerEl.appendChild(propsList(tagProps))
       } else if (slotName === 've-iframe') {
-        setElProps(viewerEl, tagProps[0], {allow:'', allowfullscreen:'', allowtransparency:'', frameborder:'', loading:'', name:'', src:''})
+        setElProps(viewerEl, tagProps[0], {allow:'', allowfullscreen:'', allowtransparency:'', caption:'', frameborder:'', loading:'', name:'', src:''})
       } else if (slotName === 've-image' || slotName === 've-gallery') {
         if (tagProps.length === 1) {
-          setElProps(viewerEl, tagProps[0], {attribution:'', caption:'', data:'', 'data-id':'', description:'', 'fit':'', label:'', license:'', src:'', title:'', url:'', 'zoom-on-scroll':''})
+          setElProps(viewerEl, tagProps[0], {attribution:'', caption:'', data:'', 'data-id':'', description:'', 'fit':'', label:'', license:'', manifest:'', refresh:'', region:'', rotate:'', rotation:'', seq:'', src:'', title:'', url:'', 'zoom-on-scroll':''})
         } else {
           setElProps(viewerEl, tagProps[0], {'zoom-on-scroll':''})
           viewerEl.appendChild(propsList(tagProps))
@@ -617,7 +619,7 @@ function restructureForJ1(article) {
       } else if (slotName === 've-plant-specimen') {
         setElProps(viewerEl, tagProps[0], {caption:'', eid:'', jpid:'', max:'', qid:'', 'taxon-name':'', wdid:''})
       } else if (slotName === 've-video') {
-        setElProps(viewerEl, tagProps[0], {alt:'', autoplay:'', caption:'', 'data-id':'', end:'', id:'', muted:'', 'no-caption':'', poster:'', src:'', start:'', sync:'', vid:''})
+        setElProps(viewerEl, tagProps[0], {alt:'', autoplay:'', caption:'', 'data-id':'', end:'', fit:'', id:'', muted:'', 'no-caption':'', poster:'', src:'', start:'', sync:'', vid:''})
       } else if (slotName === 've-visjs') {
         setElProps(viewerEl, tagProps[0], {caption:'', edges:'', hierarchical:'', nodes:'', title:'caption', url:''})
       } else if (slotName === 'data') {
@@ -838,6 +840,10 @@ function setMeta() {
   return {meta: {title, description, robots, seo}}
 }
 
+function isJunctureV1(contentEl) {
+  return contentEl.querySelector('param[ve-config]') ? true : false
+}
+
 // set the configuration
 function setConfig() {
   window.config = {
@@ -857,10 +863,10 @@ function setConfig() {
     },
     ...setMeta()
   }
-}
-
-function isJunctureV1(contentEl) {
-  return contentEl.querySelector('param[ve-config]') ? true : false
+  let contentEl = document.createElement('main')
+  contentEl.innerHTML = window.config.content || document.body.innerHTML
+  window.config.isJunctureV1 = isJunctureV1(contentEl)
+  console.log(window.config)
 }
 
 function readMoreSetup() {
@@ -925,6 +931,16 @@ function structureContent(html) {
   return article
 }
 
+function articleFromHtml(html) {
+  let contentEl = document.createElement('main')
+  contentEl.innerHTML = html
+  convertTags(contentEl)
+  let article = restructure(contentEl)
+  if (isJunctureV1(contentEl)) article = restructureForJ1(article)
+  console.log(article)
+  return article
+}
+
 // mount the content
 function mount(mountPoint, html) {
   html = html || window.config.content || document.body.innerHTML
@@ -933,22 +949,10 @@ function mount(mountPoint, html) {
     mountPoint = document.createElement('article')
     document.body.innerHTML = mountPoint.outerHTML
   }
-  
-  let contentEl = document.createElement('main')
-  contentEl.innerHTML = html
  
-  window.config.isJunctureV1 = isJunctureV1(contentEl)
-  console.log(window.config)
-
-  convertTags(contentEl)
-
-  let article = restructure(contentEl)
-  if (window.config.isJunctureV1) article = restructureForJ1(article)
-
-  console.log(article)
+  let article = articleFromHtml(html)
 
   mountPoint.replaceWith(article)
-
   if (window.config.isJunctureV1 && !isMobile) {
     document.addEventListener('scroll', () => setViewersPosition())
     setTimeout(() => setViewersPosition(), 100)
@@ -959,9 +963,12 @@ function mount(mountPoint, html) {
   return article
 }
 
-docReady(function() {  
-  setConfig()
-  mount()
+document.querySelectorAll('script').forEach(script => {
+  if (script.src === 'http://localhost:8080/index.js' || script.src === 'https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js')
+    docReady(function() {
+      setConfig()
+      mount()
+    })
 })
 
-export { getGhFile, markdownToHtml, mount, structureContent }
+export { articleFromHtml, getGhFile, markdownToHtml, mount, structureContent }

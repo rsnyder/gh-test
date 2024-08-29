@@ -55,7 +55,7 @@
 
     <!-- <script src="https://cdn.jsdelivr.net/npm/juncture-digital/js/index.js" type="module"></script> -->
     <script type="module">
-      import { getGhFile, markdownToHtml, structureContent } from './index.js'
+      import { articleFromHtml, getGhFile, markdownToHtml, structureContent } from './index.js'
 
       const searchParams = new URL(location.href).searchParams
       const sourceArg = searchParams.get('source')
@@ -251,7 +251,10 @@
 
       function mdToHtml(md) {
         let rawHTML = markdownToHtml(md)
-        let el = structureContent(rawHTML);
+        
+        // let el = structureContent(rawHTML);
+        let el =articleFromHtml(rawHTML);
+
         (Array.from(el?.querySelectorAll('article > main > p') || []).forEach(p => {
           p.removeAttribute('data-id')
           p.removeAttribute('id')
